@@ -1,7 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`Board > renders properly 1`] = `
-"<div data-v-93a62ddb="" id="board">
-  <div data-v-93a62ddb="" class="cell"></div>
-</div>"
-`;
