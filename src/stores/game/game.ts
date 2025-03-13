@@ -4,18 +4,24 @@ import type { Game, PutPawnPayload, Player, PawnSize } from '@/stores/game/types
 
 export const useGameStore = defineStore('game', () => {
   const state = reactive<Game>({
+    status: 'not-initialized',
     board: Array.from({ length: 3 }, () => Array(3).fill(null)),
     currentPlayerId: '',
     pawns: {},
   })
 
   const initiateGame = (players: Player[]) => {
+    state.status = 'pregame'
     state.board = Array.from({ length: 3 }, () => Array(3).fill(null))
     state.currentPlayerId = players[0].id
 
     players.forEach((player) => {
       state.pawns[player.id] = { ...player.pawns }
     })
+  }
+
+  const getPlayers = (): string[] => {
+    return Object.keys(state.pawns)
   }
 
   const isBigger = (size: PawnSize, pawnOnBoardSize: PawnSize) => {
@@ -39,5 +45,6 @@ export const useGameStore = defineStore('game', () => {
     state,
     initiateGame,
     putPawn,
+    getPlayers,
   }
 })

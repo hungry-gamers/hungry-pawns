@@ -3,7 +3,7 @@ import { createTestingPinia } from '@pinia/testing'
 
 import { mount } from '@vue/test-utils'
 import Board from '../TheGame.vue'
-import { useGameStore } from '../../stores/game/game'
+import { useGameStore } from '../../../stores/game/game'
 
 describe('Game', () => {
   const wrapper = mount(Board, {

@@ -19,6 +19,7 @@ describe('game.store', () => {
       2: { small: 3, medium: 3, big: 3 },
     })
     expect(state.board.flat()).toEqual([null, null, null, null, null, null, null, null, null])
+    expect(state.status).toBe('pregame')
   })
 
   it('should put pawn in empty cell', () => {
@@ -44,5 +45,11 @@ describe('game.store', () => {
     putPawn({ pawn: { size: 'small', player: '2' }, rowIndex: 0, columnIndex: 0 })
 
     expect(state.board[0][0]).toEqual({ size: 'medium', player: '1' })
+  })
+
+  it('should return players ids', () => {
+    const { getPlayers } = useGameStore()
+
+    expect(getPlayers()).toEqual(['1', '2'])
   })
 })
