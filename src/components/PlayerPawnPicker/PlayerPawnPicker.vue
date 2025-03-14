@@ -7,9 +7,11 @@ import type { PawnSize } from '@/stores/game/types.ts'
 
 const props = defineProps<{ playerId: string }>()
 
-const { state } = useGameStore()
+const { state, lockPawns } = useGameStore()
 
 const pawns = ref({ ...state.pawns[props.playerId] })
+
+const isLocked = computed(() => state.pawnsLockedBy.includes(props.playerId))
 const totalPawns = computed(() =>
   Object.values(pawns.value as Record<string, number>).reduce((sum, current) => sum + current, 0),
 )
@@ -24,24 +26,31 @@ const onAmountChange = (payload: { amount: number; size: PawnSize }) => {
 <template>
   <div>
     <span>Player: {{ playerId }}</span>
-    <PawnAmountCounter
-      size="small"
-      :amount="pawns.small"
-      :is-increase-disabled="isIncreaseButtonDisabled"
-      @on-amount-changed="onAmountChange"
-    />
-    <PawnAmountCounter
-      size="medium"
-      :amount="pawns.medium"
-      :is-increase-disabled="isIncreaseButtonDisabled"
-      @on-amount-changed="onAmountChange"
-    />
-    <PawnAmountCounter
-      size="big"
-      :amount="pawns.big"
-      :is-increase-disabled="isIncreaseButtonDisabled"
-      @on-amount-changed="onAmountChange"
-    />
+    <div v-if="isLocked">
+      Your pawns: small: {{ pawns.small }} medium: {{ pawns.medium }} big: {{ pawns.big }}
+    </div>
+    <div v-else>
+      <PawnAmountCounter
+        size="small"
+        :amount="pawns.small"
+        :is-increase-disabled="isIncreaseButtonDisabled"
+        @on-amount-changed="onAmountChange"
+      />
+      <PawnAmountCounter
+        size="medium"
+        :amount="pawns.medium"
+        :is-increase-disabled="isIncreaseButtonDisabled"
+        @on-amount-changed="onAmountChange"
+      />
+      <PawnAmountCounter
+        size="big"
+        :amount="pawns.big"
+        :is-increase-disabled="isIncreaseButtonDisabled"
+        @on-amount-changed="onAmountChange"
+      />
+    </div>
+
+    <button @click="lockPawns(playerId, pawns)" :disabled="isLocked">Lock</button>
   </div>
 </template>
 

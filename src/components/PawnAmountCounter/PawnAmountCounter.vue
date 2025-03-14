@@ -23,6 +23,7 @@ const increase = () => {
 
 <template>
   <div>
+    <span>{{ size }}</span>
     <button @click="decrease" :disabled="isDecreaseDisabled">-</button>
     <span>{{ amount }}</span>
     <button @click="increase" :disabled="isIncreaseDisabled">+</button>

@@ -24,7 +24,7 @@ describe('Game', () => {
 
     expect(gameStore.putPawn).toHaveBeenCalledTimes(1)
     expect(gameStore.putPawn).toHaveBeenCalledWith({
-      pawn: { size: 'small', player: '1' },
+      pawnSize: 'small',
       rowIndex: 0,
       columnIndex: 0,
     })
