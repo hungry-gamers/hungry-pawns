@@ -2,7 +2,7 @@ export type PawnSize = 'small' | 'medium' | 'big'
 
 export interface Pawn {
   size: PawnSize
-  player: string
+  playerId: string
 }
 
 export type Cell = Pawn | null
@@ -17,9 +17,11 @@ export type Player = {
 }
 
 export type Game = {
+  status: 'not-initialized' | 'pregame' | 'in-progress' | 'finished'
   board: Board
   currentPlayerId: string
   pawns: Record<string, Record<PawnSize, number>>
+  pawnsLockedBy: string[]
 }
 
-export type PutPawnPayload = { pawn: Pawn; rowIndex: number; columnIndex: number }
+export type PutPawnPayload = { pawnSize: PawnSize; rowIndex: number; columnIndex: number }

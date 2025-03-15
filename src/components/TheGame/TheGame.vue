@@ -8,7 +8,7 @@ const { putPawn, state } = useGameStore()
 
 const onCellClick = (rowIndex: number, columnIndex: number) => {
   putPawn({
-    pawn: { size: props.pawnSize, player: state.currentPlayerId },
+    pawnSize: props.pawnSize,
     rowIndex,
     columnIndex,
   })

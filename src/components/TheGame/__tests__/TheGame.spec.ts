@@ -3,7 +3,7 @@ import { createTestingPinia } from '@pinia/testing'
 
 import { mount } from '@vue/test-utils'
 import Board from '../TheGame.vue'
-import { useGameStore } from '../../stores/game/game'
+import { useGameStore } from '../../../stores/game/game'
 
 describe('Game', () => {
   const wrapper = mount(Board, {
@@ -24,7 +24,7 @@ describe('Game', () => {
 
     expect(gameStore.putPawn).toHaveBeenCalledTimes(1)
     expect(gameStore.putPawn).toHaveBeenCalledWith({
-      pawn: { size: 'small', player: '1' },
+      pawnSize: 'small',
       rowIndex: 0,
       columnIndex: 0,
     })
