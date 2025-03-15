@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { useGameStore } from '@/stores/game/game.ts'
 import type { PawnSize } from '@/stores/game/types.ts'
+import { computed } from 'vue'
 
 const props = defineProps<{ pawnSize: PawnSize }>()
 
-const { putPawn, state } = useGameStore()
+const { putPawn, state, getPlayers } = useGameStore()
+
+const players = computed(getPlayers)
 
 const onCellClick = (rowIndex: number, columnIndex: number) => {
   putPawn({
@@ -23,6 +26,10 @@ const onCellClick = (rowIndex: number, columnIndex: number) => {
         :key="colIndex"
         :data-test-id="`cell-${rowIndex}-${colIndex}`"
         class="cell"
+        :class="{
+          'player-1': cell?.playerId === players[0],
+          'player-2': cell?.playerId === players[1],
+        }"
         @click="onCellClick(rowIndex, colIndex)"
       >
         <span v-if="cell">{{ cell.size }}</span>
@@ -52,11 +59,19 @@ const onCellClick = (rowIndex: number, columnIndex: number) => {
   width: 200px;
   height: 200px;
   background-color: white;
-  border: 1px solid black;
+  border: 2px solid black;
   cursor: pointer;
 }
 
+.cell.player-1 {
+  border: 2px solid darkorange;
+}
+
+.cell.player-2 {
+  border: 2px solid dodgerblue;
+}
+
 .cell:hover {
-  background-color: #f0f0f0;
+  background: #d1d1d1;
 }
 </style>

@@ -24,9 +24,13 @@ const increase = () => {
 <template>
   <div>
     <span>{{ size }}</span>
-    <button @click="decrease" :disabled="isDecreaseDisabled">-</button>
+    <button @click="decrease" :disabled="isDecreaseDisabled" data-test-id="decrease-button">
+      -
+    </button>
     <span>{{ amount }}</span>
-    <button @click="increase" :disabled="isIncreaseDisabled">+</button>
+    <button @click="increase" :disabled="isIncreaseDisabled" data-test-id="increase-button">
+      +
+    </button>
   </div>
 </template>
 

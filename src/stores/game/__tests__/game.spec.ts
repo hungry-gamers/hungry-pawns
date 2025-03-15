@@ -66,4 +66,76 @@ describe('game.store', () => {
     expect(state.status).toBe('in-progress')
     expect(state.pawnsLockedBy).toEqual(['1', '2'])
   })
+
+  it('should track all turns played in the game', () => {
+    const { state, putPawn } = useGameStore()
+
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
+    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
+
+    expect(state.turns).toEqual({
+      1: { playerId: '1', move: { pawnSize: 'small', rowIndex: 0, columnIndex: 0 } },
+      2: { playerId: '2', move: { pawnSize: 'medium', rowIndex: 0, columnIndex: 0 } },
+    })
+  })
+
+  it('should find a winner for 3 in row win condition', () => {
+    const { putPawn, state } = useGameStore()
+
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
+    putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 0 })
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 1 })
+    putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 1 })
+    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 2 })
+
+    expect(state.potentialWinner).toBe('1')
+
+    putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 2 })
+    expect(state.potentialWinner).toBe('1')
+  })
+
+  it('should find a winner for 3 in column win condition', () => {
+    const { putPawn, state } = useGameStore()
+
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
+    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 1 })
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 0 })
+    putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 1 })
+    putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 0 })
+
+    expect(state.potentialWinner).toBe('1')
+
+    putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 1 })
+    expect(state.potentialWinner).toBe('1')
+  })
+
+  it('should find a winner for 3 diagonal win condition', () => {
+    const { putPawn, state } = useGameStore()
+
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
+    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 1 })
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
+    putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 1 })
+    putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 2 })
+
+    expect(state.potentialWinner).toBe('1')
+
+    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 2 })
+    expect(state.potentialWinner).toBe('1')
+  })
+
+  it('should find out that player 1 is not a winner because pawn got eaten', () => {
+    const { putPawn, state } = useGameStore()
+
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 0 })
+    putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 0 })
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
+    putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 1 })
+    putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 2 })
+
+    expect(state.potentialWinner).toBe('1')
+
+    putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 0 })
+    expect(state.potentialWinner).toBeUndefined()
+  })
 })

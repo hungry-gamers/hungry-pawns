@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PawnAmountCounter > should render properly 1`] = `"<div><span>small</span><button data-test-id="decrease-button"> - </button><span>2</span><button data-test-id="increase-button"> + </button></div>"`;
