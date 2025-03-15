@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Game > should render correctly 1`] = `
+exports[`TheGame > should render correctly 1`] = `
 "<div data-v-bc1fe25a="" id="board">
   <div data-v-bc1fe25a="" class="row">
     <div data-v-bc1fe25a="" data-test-id="cell-0-0" class="cell">

@@ -16,12 +16,14 @@ export type Player = {
   }
 }
 
+export type PutPawnPayload = { pawnSize: PawnSize; rowIndex: number; columnIndex: number }
+
 export type Game = {
   status: 'not-initialized' | 'pregame' | 'in-progress' | 'finished'
   board: Board
   currentPlayerId: string
   pawns: Record<string, Record<PawnSize, number>>
   pawnsLockedBy: string[]
+  turns: Record<number, { playerId: string; move: PutPawnPayload }>
+  potentialWinner: string | undefined
 }
-
-export type PutPawnPayload = { pawnSize: PawnSize; rowIndex: number; columnIndex: number }

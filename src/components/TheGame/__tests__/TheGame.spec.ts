@@ -2,13 +2,22 @@ import { describe, it, expect, vi } from 'vitest'
 import { createTestingPinia } from '@pinia/testing'
 
 import { mount } from '@vue/test-utils'
-import Board from '../TheGame.vue'
+import TheGame from '../TheGame.vue'
 import { useGameStore } from '../../../stores/game/game'
 
-describe('Game', () => {
-  const wrapper = mount(Board, {
+describe('TheGame', () => {
+  const pinia = createTestingPinia({
+    createSpy: vi.fn,
+  })
+
+  const gameStore = useGameStore()
+  gameStore.getPlayers = vi.fn(() => ['1', '2'])
+
+  const wrapper = mount(TheGame, {
     props: { pawnSize: 'small' },
-    global: { plugins: [createTestingPinia({ createSpy: vi.fn })] },
+    global: {
+      plugins: [pinia],
+    },
   })
 
   it('should render correctly', () => {
@@ -16,7 +25,6 @@ describe('Game', () => {
   })
 
   it('should put pawn on the board', () => {
-    const gameStore = useGameStore()
     const cell = wrapper.find('[data-test-id="cell-0-0"]')
     gameStore.state.currentPlayerId = '1'
 

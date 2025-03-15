@@ -1,6 +1,6 @@
 import { reactive } from 'vue'
 import { defineStore } from 'pinia'
-import type { Game, PutPawnPayload, Player, PawnSize } from '@/stores/game/types.ts'
+import type { Game, PutPawnPayload, Player, PawnSize, Cell } from '@/stores/game/types.ts'
 
 export const useGameStore = defineStore('game', () => {
   const state = reactive<Game>({
@@ -9,6 +9,8 @@ export const useGameStore = defineStore('game', () => {
     currentPlayerId: '',
     pawns: {},
     pawnsLockedBy: [],
+    turns: {},
+    potentialWinner: undefined,
   })
 
   const initiateGame = (players: Player[]) => {
@@ -22,7 +24,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const getPlayers = (): string[] => {
-    return Object.keys(state.pawns)
+    return Object.keys(state.pawns ?? {})
   }
 
   const lockPawns = (playerId: string, pawns: Record<PawnSize, number>) => {
@@ -43,18 +45,46 @@ export const useGameStore = defineStore('game', () => {
     return order.indexOf(size) > order.indexOf(pawnOnBoardSize)
   }
 
+  const checkWinner = (): string | undefined => {
+    const board = state.board
+
+    const isWinningLine = (line: Cell[]) => {
+      if (line.some((cell) => !cell)) return false
+      const playerId = line[0]?.playerId
+      return line.every((cell) => cell?.playerId === playerId)
+    }
+
+    for (let i = 0; i < 3; i++) {
+      if (isWinningLine([board[i][0], board[i][1], board[i][2]])) return board[i][0]?.playerId
+      if (isWinningLine([board[0][i], board[1][i], board[2][i]])) return board[0][i]?.playerId
+    }
+
+    if (isWinningLine([board[0][0], board[1][1], board[2][2]])) return board[0][0]?.playerId
+    if (isWinningLine([board[0][2], board[1][1], board[2][0]])) return board[0][2]?.playerId
+
+    return undefined
+  }
+
   const putPawn = (payload: PutPawnPayload) => {
     if (!state.pawns[state.currentPlayerId][payload.pawnSize]) return
     const cellPawn = state.board[payload.rowIndex][payload.columnIndex]
 
-    if (!cellPawn || isBigger(payload.pawnSize, cellPawn.size)) {
-      const players = Object.keys(state.pawns)
-      state.board[payload.rowIndex][payload.columnIndex] = {
-        size: payload.pawnSize,
-        playerId: state.currentPlayerId,
-      }
-      state.pawns[state.currentPlayerId][payload.pawnSize]--
-      state.currentPlayerId = players.find((player) => player !== state.currentPlayerId)!
+    if (cellPawn && !isBigger(payload.pawnSize, cellPawn.size)) return
+
+    const players = Object.keys(state.pawns)
+    state.board[payload.rowIndex][payload.columnIndex] = {
+      size: payload.pawnSize,
+      playerId: state.currentPlayerId,
+    }
+    state.pawns[state.currentPlayerId][payload.pawnSize]--
+    const lastTurn = Object.keys(state.turns).reverse()[0] ?? 0
+    state.turns[+lastTurn + 1] = { playerId: state.currentPlayerId, move: payload }
+    state.potentialWinner = checkWinner()
+    state.currentPlayerId = players.find((player) => player !== state.currentPlayerId)!
+
+    if (state.currentPlayerId === state.potentialWinner) {
+      state.status = 'finished'
+      return state.potentialWinner
     }
   }
 
@@ -64,5 +94,6 @@ export const useGameStore = defineStore('game', () => {
     putPawn,
     getPlayers,
     lockPawns,
+    checkWinner,
   }
 })

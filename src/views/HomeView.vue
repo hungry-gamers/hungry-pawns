@@ -35,6 +35,7 @@ watch(
 <template>
   <div>
     {{ state }}
+
     <div v-if="gameStatus === 'pregame'">
       <PlayerPawnPicker :player-id="playersIds[0]" />
       <PlayerPawnPicker :player-id="playersIds[1]" />

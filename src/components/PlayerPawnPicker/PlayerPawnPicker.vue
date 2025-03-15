@@ -50,7 +50,13 @@ const onAmountChange = (payload: { amount: number; size: PawnSize }) => {
       />
     </div>
 
-    <button @click="lockPawns(playerId, pawns)" :disabled="isLocked">Lock</button>
+    <button
+      @click="lockPawns(playerId, pawns)"
+      :disabled="isLocked"
+      data-test-id="lock-pawns-button"
+    >
+      Lock
+    </button>
   </div>
 </template>
 
