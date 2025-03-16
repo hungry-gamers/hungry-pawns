@@ -48,10 +48,12 @@ export const useGameStore = defineStore('game', () => {
     return order.indexOf(size) > order.indexOf(pawnOnBoardSize)
   }
 
-  const checkLineCaptureWinner = (): string | undefined => {
-    const board = state.board
+  const isInstantWin = () => {
+    return state.eatenPawnsCounter[state.currentPlayerId] === AMOUNT_OF_EATEN_PAWNS_FOR_INSTANT_WIN
+  }
 
-    if (state.eatenPawnsCounter[state.currentPlayerId] === 5) return state.currentPlayerId
+  const isLineCaptureWin = (): string | undefined => {
+    const board = state.board
 
     const isWinningLine = (line: Cell[]) => {
       if (line.some((cell) => !cell)) return false
@@ -74,30 +76,27 @@ export const useGameStore = defineStore('game', () => {
     const { rowIndex, columnIndex, pawnSize } = payload
     const currentPlayer = state.currentPlayerId
     const cellPawn = state.board[rowIndex][columnIndex]
+    const lastTurn = Math.max(...Object.keys(state.turns).map(Number), 0)
 
     if (!state.pawns[currentPlayer][pawnSize]) return
-
-    if (cellPawn && !isBigger(pawnSize, cellPawn.size)) return
-    if (cellPawn && cellPawn.playerId !== state.currentPlayerId) {
-      state.eatenPawnsCounter[currentPlayer]++
+    if (cellPawn) {
+      if (!isBigger(pawnSize, cellPawn.size)) return
+      if (cellPawn.playerId !== state.currentPlayerId) {
+        state.eatenPawnsCounter[currentPlayer]++
+      }
     }
 
     state.board[rowIndex][columnIndex] = { size: pawnSize, playerId: currentPlayer }
     state.pawns[currentPlayer][pawnSize]--
-
-    const lastTurn = Math.max(...Object.keys(state.turns).map(Number), 0)
     state.turns[lastTurn + 1] = { playerId: currentPlayer, move: payload }
+    state.potentialWinner = isInstantWin() ? state.currentPlayerId : isLineCaptureWin()
 
-    if (state.eatenPawnsCounter[state.currentPlayerId] === AMOUNT_OF_EATEN_PAWNS_FOR_INSTANT_WIN) {
-      state.potentialWinner = state.currentPlayerId
-      state.status = 'finished'
-    } else {
-      state.potentialWinner = checkLineCaptureWinner()
+    if (!isInstantWin()) {
       state.currentPlayerId = Object.keys(state.pawns).find((player) => player !== currentPlayer)!
+    }
 
-      if (state.currentPlayerId === state.potentialWinner) {
-        state.status = 'finished'
-      }
+    if (state.currentPlayerId === state.potentialWinner) {
+      state.status = 'finished'
     }
   }
 
@@ -107,6 +106,6 @@ export const useGameStore = defineStore('game', () => {
     putPawn,
     getPlayers,
     lockPawns,
-    checkLineCaptureWinner,
+    isLineCaptureWin,
   }
 })

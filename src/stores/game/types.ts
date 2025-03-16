@@ -28,7 +28,3 @@ export type Game = {
   potentialWinner: string | undefined
   eatenPawnsCounter: Record<string, number>
 }
-
-type WinCondition = 'captured-line' | 'pawns-eaten' | 'balance' | 'dominance'
-
-export type WinData = { winnerId: string; winCondition: WinCondition } | { winnerId: undefined }

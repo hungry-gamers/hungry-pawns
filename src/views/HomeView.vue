@@ -34,7 +34,7 @@ watch(
 
 <template>
   <div>
-    {{ state }}
+    <div>Pawns eaten: {{ state.eatenPawnsCounter }}</div>
 
     <div v-if="gameStatus === 'pregame'">
       <PlayerPawnPicker :player-id="playersIds[0]" />

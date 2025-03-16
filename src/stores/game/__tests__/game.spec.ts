@@ -83,6 +83,20 @@ describe('game.store', () => {
     })
   })
 
+  it('should not allow player to put pawn on board when amount of pawns of selected size is 0', () => {
+    const { putPawn, state } = useGameStore()
+
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
+    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
+    putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 1 })
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 1 })
+    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 1 })
+    putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 2 })
+
+    expect(state.board[2][2]).toBeNull()
+  })
+
   it('should count eaten pawns per player', () => {
     const { putPawn, state } = useGameStore()
 
