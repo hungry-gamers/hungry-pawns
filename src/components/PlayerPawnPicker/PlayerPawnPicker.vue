@@ -17,6 +17,7 @@ const totalPawns = computed(() =>
 )
 
 const isIncreaseButtonDisabled = computed(() => totalPawns.value === MAXIMUM_PAWNS_PER_PLAYER)
+const canGetMorePawns = computed(() => totalPawns.value < MAXIMUM_PAWNS_PER_PLAYER)
 
 const onAmountChange = (payload: { amount: number; size: PawnSize }) => {
   pawns.value[payload.size] = payload.amount
@@ -52,7 +53,7 @@ const onAmountChange = (payload: { amount: number; size: PawnSize }) => {
 
     <button
       @click="lockPawns(playerId, pawns)"
-      :disabled="isLocked"
+      :disabled="isLocked || canGetMorePawns"
       data-test-id="lock-pawns-button"
     >
       Lock
