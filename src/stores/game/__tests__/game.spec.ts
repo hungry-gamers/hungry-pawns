@@ -19,6 +19,10 @@ describe('game.store', () => {
       2: { small: 3, medium: 3, big: 3 },
     })
     expect(state.board.flat()).toEqual([null, null, null, null, null, null, null, null, null])
+    expect(state.eatenPawnsCounter).toEqual({
+      1: 0,
+      2: 0,
+    })
     expect(state.status).toBe('pregame')
   })
 
@@ -79,7 +83,18 @@ describe('game.store', () => {
     })
   })
 
-  it('should find a winner for 3 in row win condition', () => {
+  it('should count eaten pawns per player', () => {
+    const { putPawn, state } = useGameStore()
+
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
+    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
+    expect(state.eatenPawnsCounter['2']).toBe(1)
+
+    putPawn({ pawnSize: 'big', rowIndex: 0, columnIndex: 0 })
+    expect(state.eatenPawnsCounter['1']).toBe(1)
+  })
+
+  it('should find a winner for 3 horizontally', () => {
     const { putPawn, state } = useGameStore()
 
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
@@ -94,7 +109,7 @@ describe('game.store', () => {
     expect(state.potentialWinner).toBe('1')
   })
 
-  it('should find a winner for 3 in column win condition', () => {
+  it('should find a winner for 3 vertically', () => {
     const { putPawn, state } = useGameStore()
 
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
@@ -109,7 +124,7 @@ describe('game.store', () => {
     expect(state.potentialWinner).toBe('1')
   })
 
-  it('should find a winner for 3 diagonal win condition', () => {
+  it('should find a winner for 3 diagonally', () => {
     const { putPawn, state } = useGameStore()
 
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
@@ -137,5 +152,23 @@ describe('game.store', () => {
 
     putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 0 })
     expect(state.potentialWinner).toBeUndefined()
+  })
+
+  it('should finish the game instantly when player ate 5 enemy pawns', () => {
+    const { putPawn, state } = useGameStore()
+
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
+    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 0 })
+    putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 0 })
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 2 })
+    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 2 })
+    putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 1 })
+    putPawn({ pawnSize: 'big', rowIndex: 2, columnIndex: 1 })
+    putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 2 })
+    putPawn({ pawnSize: 'big', rowIndex: 2, columnIndex: 2 })
+
+    expect(state.potentialWinner).toBe('2')
+    expect(state.status).toBe('finished')
   })
 })

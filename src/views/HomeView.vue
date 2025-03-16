@@ -48,6 +48,11 @@ watch(
         <button @click="selectPawnSize('big')" :disabled="!hasBigPawns">Big</button>
       </div>
       <TheGame :pawnSize="pawnSize" />
+      <div>
+        <span>How to win</span>
+        <div>Capture the line (horizontally, diagonally or vertically) and hold for 1 turn</div>
+        <div>Capture 5 opponent pawns for instant win</div>
+      </div>
     </div>
   </div>
 </template>

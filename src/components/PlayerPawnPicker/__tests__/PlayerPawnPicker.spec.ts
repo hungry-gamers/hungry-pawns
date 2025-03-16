@@ -24,9 +24,11 @@ describe('PlayerPawnPicker', () => {
 
   it('should lock pawns', () => {
     wrapper.vm.pawns = { small: 2, medium: 4, big: 3 }
-    const button = wrapper.find('[data-test-id="lock-pawns-button"]')
-    button.trigger('click')
-    expect(useGameStore().lockPawns).toHaveBeenCalledTimes(1)
-    expect(useGameStore().lockPawns).toHaveBeenCalledWith('1', { small: 2, medium: 4, big: 3 })
+    wrapper.vm.$nextTick(() => {
+      const button = wrapper.find('[data-test-id="lock-pawns-button"]')
+      button.trigger('click')
+      expect(useGameStore().lockPawns).toHaveBeenCalledTimes(1)
+      expect(useGameStore().lockPawns).toHaveBeenCalledWith('1', { small: 2, medium: 4, big: 3 })
+    })
   })
 })

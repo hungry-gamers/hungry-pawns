@@ -1,6 +1,7 @@
 import { reactive } from 'vue'
 import { defineStore } from 'pinia'
 import type { Game, PutPawnPayload, Player, PawnSize, Cell } from '@/stores/game/types.ts'
+import { AMOUNT_OF_EATEN_PAWNS_FOR_INSTANT_WIN } from '@/utils/constants.ts'
 
 export const useGameStore = defineStore('game', () => {
   const state = reactive<Game>({
@@ -10,6 +11,7 @@ export const useGameStore = defineStore('game', () => {
     pawns: {},
     pawnsLockedBy: [],
     turns: {},
+    eatenPawnsCounter: {},
     potentialWinner: undefined,
   })
 
@@ -20,6 +22,7 @@ export const useGameStore = defineStore('game', () => {
 
     players.forEach((player) => {
       state.pawns[player.id] = { ...player.pawns }
+      state.eatenPawnsCounter[player.id] = 0
     })
   }
 
@@ -45,8 +48,10 @@ export const useGameStore = defineStore('game', () => {
     return order.indexOf(size) > order.indexOf(pawnOnBoardSize)
   }
 
-  const checkWinner = (): string | undefined => {
+  const checkLineCaptureWinner = (): string | undefined => {
     const board = state.board
+
+    if (state.eatenPawnsCounter[state.currentPlayerId] === 5) return state.currentPlayerId
 
     const isWinningLine = (line: Cell[]) => {
       if (line.some((cell) => !cell)) return false
@@ -66,25 +71,33 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const putPawn = (payload: PutPawnPayload) => {
-    if (!state.pawns[state.currentPlayerId][payload.pawnSize]) return
-    const cellPawn = state.board[payload.rowIndex][payload.columnIndex]
+    const { rowIndex, columnIndex, pawnSize } = payload
+    const currentPlayer = state.currentPlayerId
+    const cellPawn = state.board[rowIndex][columnIndex]
 
-    if (cellPawn && !isBigger(payload.pawnSize, cellPawn.size)) return
+    if (!state.pawns[currentPlayer][pawnSize]) return
 
-    const players = Object.keys(state.pawns)
-    state.board[payload.rowIndex][payload.columnIndex] = {
-      size: payload.pawnSize,
-      playerId: state.currentPlayerId,
+    if (cellPawn && !isBigger(pawnSize, cellPawn.size)) return
+    if (cellPawn && cellPawn.playerId !== state.currentPlayerId) {
+      state.eatenPawnsCounter[currentPlayer]++
     }
-    state.pawns[state.currentPlayerId][payload.pawnSize]--
-    const lastTurn = Object.keys(state.turns).reverse()[0] ?? 0
-    state.turns[+lastTurn + 1] = { playerId: state.currentPlayerId, move: payload }
-    state.potentialWinner = checkWinner()
-    state.currentPlayerId = players.find((player) => player !== state.currentPlayerId)!
 
-    if (state.currentPlayerId === state.potentialWinner) {
+    state.board[rowIndex][columnIndex] = { size: pawnSize, playerId: currentPlayer }
+    state.pawns[currentPlayer][pawnSize]--
+
+    const lastTurn = Math.max(...Object.keys(state.turns).map(Number), 0)
+    state.turns[lastTurn + 1] = { playerId: currentPlayer, move: payload }
+
+    if (state.eatenPawnsCounter[state.currentPlayerId] === AMOUNT_OF_EATEN_PAWNS_FOR_INSTANT_WIN) {
+      state.potentialWinner = state.currentPlayerId
       state.status = 'finished'
-      return state.potentialWinner
+    } else {
+      state.potentialWinner = checkLineCaptureWinner()
+      state.currentPlayerId = Object.keys(state.pawns).find((player) => player !== currentPlayer)!
+
+      if (state.currentPlayerId === state.potentialWinner) {
+        state.status = 'finished'
+      }
     }
   }
 
@@ -94,6 +107,6 @@ export const useGameStore = defineStore('game', () => {
     putPawn,
     getPlayers,
     lockPawns,
-    checkWinner,
+    checkLineCaptureWinner,
   }
 })
