@@ -19,7 +19,7 @@ describe('game.store', () => {
       2: { small: 3, medium: 3, big: 3 },
     })
     expect(state.board.flat()).toEqual([null, null, null, null, null, null, null, null, null])
-    expect(state.eatenPawnsCounter).toEqual({
+    expect(state.capturedPawnsCounter).toEqual({
       1: 0,
       2: 0,
     })
@@ -123,7 +123,7 @@ describe('game.store', () => {
     expect(state.board[2][2]).toBeNull()
   })
 
-  it('should count eaten pawns per player', () => {
+  it('should count captured pawns per player', () => {
     const { putPawn, state, lockPawns } = useGameStore()
     lockPawns('1', { small: 3, medium: 3, big: 3 })
     lockPawns('2', { small: 3, medium: 3, big: 3 })
@@ -133,10 +133,12 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 2 })
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 1 })
-    expect(state.eatenPawnsCounter['1']).toBe(1)
+    expect(state.capturedPawnsCounter['1']).toBe(1)
+    expect(state.pawns['1'].small).toBe(2)
 
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
-    expect(state.eatenPawnsCounter['2']).toBe(1)
+    expect(state.capturedPawnsCounter['2']).toBe(1)
+    expect(state.pawns['2'].small).toBe(2)
   })
 
   it('should find a winner for 3 horizontally', () => {
@@ -190,7 +192,7 @@ describe('game.store', () => {
     expect(state.potentialWinner).toBe('1')
   })
 
-  it('should find out that player 1 is not a winner because pawn got eaten', () => {
+  it('should find out that player 1 is not a winner because pawn got captured', () => {
     const { putPawn, state, lockPawns } = useGameStore()
     lockPawns('1', { small: 3, medium: 3, big: 3 })
     lockPawns('2', { small: 3, medium: 3, big: 3 })
@@ -205,6 +207,21 @@ describe('game.store', () => {
 
     putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 0 })
     expect(state.potentialWinner).toBeUndefined()
+  })
+
+  it('should allow reuse of pawns captured by their owner', () => {
+    const { putPawn, state, lockPawns } = useGameStore()
+    lockPawns('1', { small: 3, medium: 3, big: 3 })
+    lockPawns('2', { small: 3, medium: 3, big: 3 })
+
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
+    putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 0 })
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
+    putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 1 })
+    expect(state.pawns['1'].small).toBe(1)
+
+    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
+    expect(state.pawns['1'].small).toBe(2)
   })
 
   it('should finish the game instantly when player ate 5 enemy pawns', () => {
@@ -237,8 +254,3 @@ describe('game.store', () => {
     expect(state.status).toBe('finished')
   })
 })
-// 3
-
-// x o O
-// O x
-// O  O

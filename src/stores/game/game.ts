@@ -10,7 +10,7 @@ export const useGameStore = defineStore('game', () => {
     pawns: {},
     pawnsLockedBy: [],
     turns: {},
-    eatenPawnsCounter: {},
+    capturedPawnsCounter: {},
     potentialWinner: undefined,
     allowedPawns: ['small'],
   })
@@ -23,7 +23,7 @@ export const useGameStore = defineStore('game', () => {
 
     players.forEach((player) => {
       state.pawns[player.id] = { ...player.pawns }
-      state.eatenPawnsCounter[player.id] = 0
+      state.capturedPawnsCounter[player.id] = 0
     })
   }
 
@@ -52,7 +52,9 @@ export const useGameStore = defineStore('game', () => {
   const checkInstantWin = () => {
     const AMOUNT_OF_EATEN_PAWNS_FOR_INSTANT_WIN = 5
 
-    return state.eatenPawnsCounter[state.currentPlayerId] === AMOUNT_OF_EATEN_PAWNS_FOR_INSTANT_WIN
+    return (
+      state.capturedPawnsCounter[state.currentPlayerId] === AMOUNT_OF_EATEN_PAWNS_FOR_INSTANT_WIN
+    )
   }
 
   const isLineCaptureWin = (): string | undefined => {
@@ -92,30 +94,34 @@ export const useGameStore = defineStore('game', () => {
 
   const putPawn = (payload: PutPawnPayload) => {
     const { rowIndex, columnIndex, pawnSize } = payload
-    const currentPlayer = state.currentPlayerId
     const cellPawn = state.board[rowIndex][columnIndex]
     const lastTurn = Math.max(...Object.keys(state.turns).map(Number), 0)
     const moveNotAllowed =
-      !state.pawns[currentPlayer][pawnSize] || !state.allowedPawns.includes(payload.pawnSize)
+      !state.pawns[state.currentPlayerId][pawnSize] ||
+      !state.allowedPawns.includes(payload.pawnSize)
 
     if (moveNotAllowed || state.status !== 'in-progress') return
 
     if (cellPawn) {
       if (!isBigger(pawnSize, cellPawn.size)) return
       if (cellPawn.playerId !== state.currentPlayerId) {
-        state.eatenPawnsCounter[currentPlayer]++
+        state.capturedPawnsCounter[state.currentPlayerId]++
       }
+
+      state.pawns[state.currentPlayerId][cellPawn.size]++
     }
 
-    state.board[rowIndex][columnIndex] = { size: pawnSize, playerId: currentPlayer }
-    state.pawns[currentPlayer][pawnSize]--
-    state.turns[lastTurn + 1] = { playerId: currentPlayer, move: payload }
+    state.board[rowIndex][columnIndex] = { size: pawnSize, playerId: state.currentPlayerId }
+    state.pawns[state.currentPlayerId][pawnSize]--
+    state.turns[lastTurn + 1] = { playerId: state.currentPlayerId, move: payload }
     const isInstantWin = checkInstantWin()
 
     state.potentialWinner = isInstantWin ? state.currentPlayerId : isLineCaptureWin()
 
     if (!isInstantWin) {
-      state.currentPlayerId = Object.keys(state.pawns).find((player) => player !== currentPlayer)!
+      state.currentPlayerId = Object.keys(state.pawns).find(
+        (player) => player !== state.currentPlayerId,
+      )!
     }
 
     if (state.currentPlayerId === state.potentialWinner) {
