@@ -12,9 +12,13 @@ const pawnSize = ref<PawnSize>('small')
 const gameStatus = computed(() => state.status)
 const playersIds = computed(getPlayers)
 const currentPlayerId = computed(() => state.currentPlayerId)
-const hasSmallPawns = computed(() => state.pawns[currentPlayerId.value]?.small > 0)
-const hasMediumPawns = computed(() => state.pawns[currentPlayerId.value]?.medium > 0)
-const hasBigPawns = computed(() => state.pawns[currentPlayerId.value]?.big > 0)
+const areSmallPawnsAllowed = computed(() => state.pawns[currentPlayerId.value]?.small > 0)
+const areMediumPawnsAllowed = computed(() => {
+  return state.pawns[currentPlayerId.value]?.medium > 0 && state.allowedPawns.includes('medium')
+})
+const areBigPawnsAllowed = computed(() => {
+  return state.pawns[currentPlayerId.value]?.big > 0 && state.allowedPawns.includes('big')
+})
 
 const selectPawnSize = (size: PawnSize) => {
   pawnSize.value = size
@@ -25,9 +29,9 @@ onMounted(() => initiateGame(players))
 watch(
   () => currentPlayerId.value,
   () => {
-    if (hasBigPawns.value) pawnSize.value = 'big'
-    if (hasMediumPawns.value) pawnSize.value = 'medium'
-    if (hasSmallPawns.value) pawnSize.value = 'small'
+    if (areBigPawnsAllowed.value) pawnSize.value = 'big'
+    if (areMediumPawnsAllowed.value) pawnSize.value = 'medium'
+    if (areSmallPawnsAllowed.value) pawnSize.value = 'small'
   },
 )
 </script>
@@ -43,9 +47,9 @@ watch(
 
     <div v-else>
       <div>
-        <button @click="selectPawnSize('small')" :disabled="!hasSmallPawns">Small</button>
-        <button @click="selectPawnSize('medium')" :disabled="!hasMediumPawns">Medium</button>
-        <button @click="selectPawnSize('big')" :disabled="!hasBigPawns">Big</button>
+        <button @click="selectPawnSize('small')" :disabled="!areSmallPawnsAllowed">Small</button>
+        <button @click="selectPawnSize('medium')" :disabled="!areMediumPawnsAllowed">Medium</button>
+        <button @click="selectPawnSize('big')" :disabled="!areBigPawnsAllowed">Big</button>
       </div>
       <TheGame :pawnSize="pawnSize" />
       <div>

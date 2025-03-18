@@ -13,12 +13,14 @@ export const useGameStore = defineStore('game', () => {
     turns: {},
     eatenPawnsCounter: {},
     potentialWinner: undefined,
+    allowedPawns: ['small'],
   })
 
   const initiateGame = (players: Player[]) => {
     state.status = 'pregame'
     state.board = Array.from({ length: 3 }, () => Array(3).fill(null))
     state.currentPlayerId = players[0].id
+    state.allowedPawns = ['small']
 
     players.forEach((player) => {
       state.pawns[player.id] = { ...player.pawns }
@@ -77,8 +79,11 @@ export const useGameStore = defineStore('game', () => {
     const currentPlayer = state.currentPlayerId
     const cellPawn = state.board[rowIndex][columnIndex]
     const lastTurn = Math.max(...Object.keys(state.turns).map(Number), 0)
+    const moveNotAllowed =
+      !state.pawns[currentPlayer][pawnSize] || !state.allowedPawns.includes(payload.pawnSize)
 
-    if (!state.pawns[currentPlayer][pawnSize]) return
+    if (moveNotAllowed || state.status !== 'in-progress') return
+
     if (cellPawn) {
       if (!isBigger(pawnSize, cellPawn.size)) return
       if (cellPawn.playerId !== state.currentPlayerId) {
@@ -89,6 +94,15 @@ export const useGameStore = defineStore('game', () => {
     state.board[rowIndex][columnIndex] = { size: pawnSize, playerId: currentPlayer }
     state.pawns[currentPlayer][pawnSize]--
     state.turns[lastTurn + 1] = { playerId: currentPlayer, move: payload }
+    const turnsPlayed = Object.keys(state.turns).length
+
+    if (state.allowedPawns.length === 1 && turnsPlayed === 4) {
+      state.allowedPawns.push('medium')
+    }
+    if (state.allowedPawns.length === 2 && turnsPlayed === 8) {
+      state.allowedPawns.push('big')
+    }
+
     state.potentialWinner = isInstantWin() ? state.currentPlayerId : isLineCaptureWin()
 
     if (!isInstantWin()) {
