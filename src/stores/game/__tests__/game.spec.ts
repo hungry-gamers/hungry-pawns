@@ -2,12 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useGameStore } from '../game'
 import { players } from '../../../utils/mocks/game'
-// it('should not allow player to put pawn on the board if game is not in progress', () => {
-//   const { state, putPawn } = useGameStore()
-//   putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
-//
-//   expect(state.board[0][0]).toBeNull()
-// })
+
 describe('game.store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -30,6 +25,13 @@ describe('game.store', () => {
     })
     expect(state.status).toBe('pregame')
     expect(state.allowedPawns).toEqual(['small'])
+  })
+
+  it('should not allow player to put pawn on the board if game is not in progress', () => {
+    const { state, putPawn } = useGameStore()
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
+
+    expect(state.board[0][0]).toBeNull()
   })
 
   it('should put pawn in empty cell', () => {

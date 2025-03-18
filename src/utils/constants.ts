@@ -1,3 +1,1 @@
 export const MAXIMUM_PAWNS_PER_PLAYER = 9
-
-export const AMOUNT_OF_EATEN_PAWNS_FOR_INSTANT_WIN = 5
