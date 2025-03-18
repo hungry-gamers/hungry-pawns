@@ -27,4 +27,5 @@ export type Game = {
   turns: Record<number, { playerId: string; move: PutPawnPayload }>
   potentialWinner: string | undefined
   eatenPawnsCounter: Record<string, number>
+  allowedPawns: PawnSize[]
 }
