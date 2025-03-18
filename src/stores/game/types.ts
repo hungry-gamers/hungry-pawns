@@ -26,6 +26,6 @@ export type Game = {
   pawnsLockedBy: string[]
   turns: Record<number, { playerId: string; move: PutPawnPayload }>
   potentialWinner: string | undefined
-  eatenPawnsCounter: Record<string, number>
+  capturedPawnsCounter: Record<string, number>
   allowedPawns: PawnSize[]
 }
