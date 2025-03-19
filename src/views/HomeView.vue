@@ -40,12 +40,12 @@ watch(
   <div>
     <div>Pawns eaten: {{ state.capturedPawnsCounter }} {{ state.status }}</div>
     <div>Pawns: {{ state.pawns }}</div>
-    <div v-if="gameStatus === 'pregame'">
+    <div v-if="gameStatus === 'pregame'" class="container">
       <PlayerPawnPicker :player-id="playersIds[0]" />
       <PlayerPawnPicker :player-id="playersIds[1]" />
     </div>
 
-    <div v-else>
+    <div v-else class="container">
       <div>
         <button @click="selectPawnSize('small')" :disabled="!areSmallPawnsAllowed">Small</button>
         <button @click="selectPawnSize('medium')" :disabled="!areMediumPawnsAllowed">Medium</button>
@@ -60,3 +60,9 @@ watch(
     </div>
   </div>
 </template>
+
+<style scoped>
+.container {
+  margin-top: 20px;
+}
+</style>

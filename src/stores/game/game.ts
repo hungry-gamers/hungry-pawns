@@ -13,6 +13,7 @@ export const useGameStore = defineStore('game', () => {
     capturedPawnsCounter: {},
     potentialWinner: undefined,
     allowedPawns: ['small'],
+    specialPowersAvailable: {},
   })
 
   const initiateGame = (players: Player[]) => {
@@ -23,6 +24,7 @@ export const useGameStore = defineStore('game', () => {
 
     players.forEach((player) => {
       state.pawns[player.id] = { ...player.pawns }
+      state.specialPowersAvailable[player.id] = ['shield']
       state.capturedPawnsCounter[player.id] = 0
     })
   }
@@ -33,13 +35,12 @@ export const useGameStore = defineStore('game', () => {
 
   const lockPawns = (playerId: string, pawns: Record<PawnSize, number>) => {
     if (state.pawnsLockedBy.includes(playerId)) return
-    state.pawnsLockedBy.push(playerId)
     state.pawns[playerId].small = pawns.small
     state.pawns[playerId].medium = pawns.medium
     state.pawns[playerId].big = pawns.big
-    const [player1Id, player2Id] = getPlayers()
+    state.pawnsLockedBy.push(playerId)
 
-    if (state.pawnsLockedBy.includes(player1Id) && state.pawnsLockedBy.includes(player2Id)) {
+    if (state.pawnsLockedBy.length === getPlayers().length) {
       state.status = 'in-progress'
     }
   }
@@ -111,7 +112,11 @@ export const useGameStore = defineStore('game', () => {
       state.pawns[state.currentPlayerId][cellPawn.size]++
     }
 
-    state.board[rowIndex][columnIndex] = { size: pawnSize, playerId: state.currentPlayerId }
+    state.board[rowIndex][columnIndex] = {
+      size: pawnSize,
+      playerId: state.currentPlayerId,
+      protectedUntilTheTurn: undefined,
+    }
     state.pawns[state.currentPlayerId][pawnSize]--
     state.turns[lastTurn + 1] = { playerId: state.currentPlayerId, move: payload }
     const isInstantWin = checkInstantWin()
