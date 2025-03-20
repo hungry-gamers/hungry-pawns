@@ -25,8 +25,7 @@ describe('game.store', () => {
     })
     expect(state.status).toBe('pregame')
     expect(state.allowedPawns).toEqual(['small'])
-    expect(state.specialPowersAvailable['1']).toEqual(['shield'])
-    expect(state.specialPowersAvailable['2']).toEqual(['shield'])
+    expect(state.pawnsLockedBy.length).toBe(0)
   })
 
   it('should not allow player to put pawn on the board if game is not in progress', () => {
