@@ -1,3 +1,24 @@
 * {
   box-sizing: border-box;
 }
+
+:root {
+  --player-1: darkorange;
+  --player-2: dodgerblue;
+}
+
+.player-1-text {
+  color: var(--player-1)
+}
+
+.player-1-background {
+  background: var(--player-1)
+}
+
+.player-2-text {
+  color: var(--player-2)
+}
+
+.player-2-background {
+  background: var(--player-2)
+}

@@ -2,26 +2,34 @@
 import TheGame from '@/components/TheGame/TheGame.vue'
 import { useGameStore } from '@/stores/game/game.ts'
 import { computed, onMounted, ref, watch } from 'vue'
-import type { PawnSize } from '@/stores/game/types.ts'
+import * as GameT from '@/stores/game/types.ts'
 import { players } from '@/utils/mocks/game.ts'
 import PlayerPawnPicker from '@/components/PlayerPawnPicker/PlayerPawnPicker.vue'
+import Shield from '@/components/Shield.vue'
 
 const { initiateGame, getPlayers, state } = useGameStore()
-const pawnSize = ref<PawnSize>('small')
+const move = ref<GameT.Move>({ size: 'small', mode: 'pawn' })
 
 const gameStatus = computed(() => state.status)
 const playersIds = computed(getPlayers)
 const currentPlayerId = computed(() => state.currentPlayerId)
-const areSmallPawnsAllowed = computed(() => state.pawns[currentPlayerId.value]?.small > 0)
+const areSmallPawnsAllowed = computed(() => state.players[currentPlayerId.value]?.pawns.small > 0)
 const areMediumPawnsAllowed = computed(() => {
-  return state.pawns[currentPlayerId.value]?.medium > 0 && state.allowedPawns.includes('medium')
+  return (
+    state.players[currentPlayerId.value]?.pawns.medium > 0 && state.allowedPawns.includes('medium')
+  )
 })
 const areBigPawnsAllowed = computed(() => {
-  return state.pawns[currentPlayerId.value]?.big > 0 && state.allowedPawns.includes('big')
+  return state.players[currentPlayerId.value]?.pawns.big > 0 && state.allowedPawns.includes('big')
 })
 
-const selectPawnSize = (size: PawnSize) => {
-  pawnSize.value = size
+const selectPawnSize = (size: GameT.PawnSize) => {
+  move.value.mode = 'pawn'
+  move.value.size = size
+}
+
+const activateShieldMode = () => {
+  move.value.mode = 'shield'
 }
 
 onMounted(() => initiateGame(players))
@@ -29,29 +37,30 @@ onMounted(() => initiateGame(players))
 watch(
   () => currentPlayerId.value,
   () => {
-    if (areBigPawnsAllowed.value) pawnSize.value = 'big'
-    if (areMediumPawnsAllowed.value) pawnSize.value = 'medium'
-    if (areSmallPawnsAllowed.value) pawnSize.value = 'small'
+    if (areBigPawnsAllowed.value) selectPawnSize('big')
+    if (areMediumPawnsAllowed.value) selectPawnSize('medium')
+    if (areSmallPawnsAllowed.value) selectPawnSize('small')
   },
 )
 </script>
 
 <template>
   <div>
-    <div>Pawns eaten: {{ state.capturedPawnsCounter }} {{ state.status }}</div>
-    <div>Pawns: {{ state.pawns }}</div>
-    <div v-if="gameStatus === 'pregame'">
+    <div>Pawns eaten: {{ state.players }} --- {{ state.status }}</div>
+    <div v-if="gameStatus === 'pregame'" class="container">
       <PlayerPawnPicker :player-id="playersIds[0]" />
       <PlayerPawnPicker :player-id="playersIds[1]" />
     </div>
 
-    <div v-else>
+    <div v-else class="container">
       <div>
         <button @click="selectPawnSize('small')" :disabled="!areSmallPawnsAllowed">Small</button>
         <button @click="selectPawnSize('medium')" :disabled="!areMediumPawnsAllowed">Medium</button>
         <button @click="selectPawnSize('big')" :disabled="!areBigPawnsAllowed">Big</button>
+
+        <button @click="activateShieldMode">Shield</button>
       </div>
-      <TheGame :pawnSize="pawnSize" />
+      <TheGame :move="move" />
       <div>
         <span>How to win</span>
         <div>Capture the line (horizontally, diagonally or vertically) and hold for 1 turn</div>
@@ -60,3 +69,9 @@ watch(
     </div>
   </div>
 </template>
+
+<style scoped>
+.container {
+  margin-top: 20px;
+}
+</style>

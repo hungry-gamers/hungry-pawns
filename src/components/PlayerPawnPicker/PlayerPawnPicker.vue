@@ -9,9 +9,9 @@ const props = defineProps<{ playerId: string }>()
 
 const { state, lockPawns } = useGameStore()
 
-const pawns = ref({ ...state.pawns[props.playerId] })
+const pawns = ref({ ...state.players[props.playerId]?.pawns })
 
-const isLocked = computed(() => state.pawnsLockedBy.includes(props.playerId))
+const isLocked = computed(() => state.players[props.playerId]?.arePawnsLocked)
 const totalPawns = computed(() =>
   Object.values(pawns.value as Record<string, number>).reduce((sum, current) => sum + current, 0),
 )

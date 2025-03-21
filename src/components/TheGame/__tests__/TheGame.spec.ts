@@ -14,7 +14,7 @@ describe('TheGame', () => {
   gameStore.getPlayers = vi.fn(() => ['1', '2'])
 
   const wrapper = mount(TheGame, {
-    props: { pawnSize: 'small' },
+    props: { move: { size: 'small', mode: 'pawn' } },
     global: {
       plugins: [pinia],
     },

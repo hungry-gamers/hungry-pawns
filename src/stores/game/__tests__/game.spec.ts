@@ -12,37 +12,42 @@ describe('game.store', () => {
   })
 
   it('should initiate game', () => {
+    const player = {
+      pawns: { small: 3, medium: 3, big: 3 },
+      capturedPawnsCounter: 0,
+      arePawnsLocked: false,
+      specialMoves: ['shield'],
+    }
     const { state } = useGameStore()
     expect(state.currentPlayerId).toBe('1')
-    expect(state.pawns).toEqual({
-      1: { small: 3, medium: 3, big: 3 },
-      2: { small: 3, medium: 3, big: 3 },
-    })
-    expect(state.board.flat()).toEqual([null, null, null, null, null, null, null, null, null])
-    expect(state.capturedPawnsCounter).toEqual({
-      1: 0,
-      2: 0,
-    })
     expect(state.status).toBe('pregame')
     expect(state.allowedPawns).toEqual(['small'])
+    expect(state.players).toEqual({
+      1: player,
+      2: player,
+    })
+    expect(state.board.flat()).toEqual(
+      Array(9).fill({ shield: { activeInTurn: -1, appliedBy: '' }, pawn: null }),
+    )
   })
 
   it('should not allow player to put pawn on the board if game is not in progress', () => {
     const { state, putPawn } = useGameStore()
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
 
-    expect(state.board[0][0]).toBeNull()
+    expect(state.board[0][0].pawn).toBeNull()
   })
 
-  it('should put pawn in empty cell', () => {
+  it('should put pawn in empty cell and switch turn', () => {
     const { state, putPawn, lockPawns } = useGameStore()
     lockPawns('1', { small: 3, medium: 3, big: 3 })
     lockPawns('2', { small: 3, medium: 3, big: 3 })
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
 
     expect(state.currentPlayerId).toBe('2')
-    expect(state.pawns[1].small).toBe(2)
-    expect(state.board[0][0]).toEqual({ size: 'small', playerId: '1' })
+    expect(state.players[1].pawns.small).toBe(2)
+    expect(state.board[0][0].pawn).toEqual({ size: 'small', playerId: '1' })
+    expect(state.currentPlayerId).toBe('2')
   })
 
   it('should replace smaller pawn with bigger one', () => {
@@ -55,7 +60,7 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 1 })
 
-    expect(state.board[0][1]).toEqual({ size: 'medium', playerId: '1' })
+    expect(state.board[0][1].pawn).toEqual({ size: 'medium', playerId: '1' })
   })
 
   it('should not replace bigger pawn with smaller one', () => {
@@ -70,7 +75,7 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
 
-    expect(state.board[0][0]).toEqual({ size: 'medium', playerId: '1' })
+    expect(state.board[0][0].pawn).toEqual({ size: 'medium', playerId: '1' })
   })
 
   it('should return players ids', () => {
@@ -84,13 +89,13 @@ describe('game.store', () => {
 
     lockPawns('1', { small: 3, medium: 5, big: 1 })
     expect(state.status).toBe('pregame')
-    expect(state.pawnsLockedBy).toEqual(['1'])
-    expect(state.pawns['1']).toEqual({ small: 3, medium: 5, big: 1 })
+    expect(state.players['1'].arePawnsLocked).toBe(true)
+    expect(state.players['1'].pawns).toEqual({ small: 3, medium: 5, big: 1 })
     lockPawns('2', { small: 2, medium: 4, big: 3 })
-    expect(state.pawns['2']).toEqual({ small: 2, medium: 4, big: 3 })
+    expect(state.players['2'].pawns).toEqual({ small: 2, medium: 4, big: 3 })
 
     expect(state.status).toBe('in-progress')
-    expect(state.pawnsLockedBy).toEqual(['1', '2'])
+    expect(state.players['2'].arePawnsLocked).toBe(true)
   })
 
   it('should track all turns played in the game', () => {
@@ -120,7 +125,7 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 1 })
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 2 })
 
-    expect(state.board[2][2]).toBeNull()
+    expect(state.board[2][2].pawn).toBeNull()
   })
 
   it('should count captured pawns per player', () => {
@@ -133,12 +138,12 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 2 })
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 1 })
-    expect(state.capturedPawnsCounter['1']).toBe(1)
-    expect(state.pawns['1'].small).toBe(2)
+    expect(state.players['1'].capturedPawnsCounter).toBe(1)
+    expect(state.players['1'].pawns.small).toBe(2)
 
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
-    expect(state.capturedPawnsCounter['2']).toBe(1)
-    expect(state.pawns['2'].small).toBe(2)
+    expect(state.players['2'].capturedPawnsCounter).toBe(1)
+    expect(state.players['2'].pawns.small).toBe(2)
   })
 
   it('should find a winner for 3 horizontally', () => {
@@ -218,10 +223,10 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 1 })
-    expect(state.pawns['1'].small).toBe(1)
+    expect(state.players['1'].pawns.small).toBe(1)
 
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
-    expect(state.pawns['1'].small).toBe(2)
+    expect(state.players['1'].pawns.small).toBe(2)
   })
 
   it('should finish the game instantly when player ate 5 enemy pawns', () => {
