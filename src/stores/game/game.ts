@@ -98,6 +98,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const applyShield = (payload: GameT.ApplyShieldPayload) => {
+    if (!state.players[state.currentPlayerId].specialMoves.includes('shield')) return
     const { rowIndex, columnIndex } = payload
     state.players[state.currentPlayerId].specialMoves = state.players[
       state.currentPlayerId

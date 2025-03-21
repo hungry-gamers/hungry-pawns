@@ -5,6 +5,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import * as GameT from '@/stores/game/types.ts'
 import { players } from '@/utils/mocks/game.ts'
 import PlayerPawnPicker from '@/components/PlayerPawnPicker/PlayerPawnPicker.vue'
+import Shield from '@/components/Shield.vue'
 
 const { initiateGame, getPlayers, state } = useGameStore()
 const move = ref<GameT.Move>({ size: 'small', mode: 'pawn' })

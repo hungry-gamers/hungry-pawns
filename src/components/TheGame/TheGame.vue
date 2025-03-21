@@ -2,6 +2,7 @@
 import { useGameStore } from '@/stores/game/game.ts'
 import type { Move } from '@/stores/game/types.ts'
 import { computed } from 'vue'
+import Shield from '@/components/Shield.vue'
 
 const props = defineProps<{ move: Move }>()
 
@@ -36,14 +37,11 @@ const onCellClick = (rowIndex: number, columnIndex: number) => {
         }"
         @click="onCellClick(rowIndex, colIndex)"
       >
-        <div
+        <Shield
           v-if="cell.shield.activeInTurn === getCurrentTurn()"
-          class="shield"
-          :class="{
-            'player-1': cell.shield.appliedBy === players[0],
-            'player-2': cell.shield.appliedBy === players[1],
-          }"
+          :owner-id="cell.shield.appliedBy"
         />
+
         <span v-if="cell.pawn">{{ cell.pawn.size }}</span>
       </div>
     </div>
@@ -70,15 +68,10 @@ const onCellClick = (rowIndex: number, columnIndex: number) => {
   left: 0;
   bottom: 0;
   right: 0;
-  opacity: 0.2;
-}
-
-.shield.player-1 {
-  background: darkorange;
-}
-
-.shield.player-2 {
-  background: dodgerblue;
+  opacity: 0.3;
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(3px);
 }
 
 .cell {

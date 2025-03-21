@@ -22,6 +22,18 @@ describe('game.store - shield', () => {
     expect(state.players['1'].specialMoves.includes('shield')).toBe(false)
   })
 
+  it('should allow to apply shield only once per game per player', () => {
+    const { state, applyShield, putPawn } = useGameStore()
+    applyShield({ rowIndex: 0, columnIndex: 0 })
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 0 })
+    applyShield({ rowIndex: 0, columnIndex: 0 })
+    expect(state.currentPlayerId).toBe('1')
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
+
+    expect(state.board[0][0].shield.activeInTurn).toBe(2)
+    expect(state.currentPlayerId).toBe('2')
+  })
+
   it('should apply shield to the opponent cell', () => {
     const { state, applyShield, putPawn } = useGameStore()
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
