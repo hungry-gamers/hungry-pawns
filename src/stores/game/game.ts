@@ -2,6 +2,7 @@ import { reactive } from 'vue'
 import { defineStore } from 'pinia'
 import * as GameT from '@/stores/game/types.ts'
 import * as GameService from '@/services/game.service.ts'
+import type { PutPawnPayload } from '@/stores/game/types.ts'
 
 export const useGameStore = defineStore('game', () => {
   const state = reactive<GameT.Game>({
@@ -95,6 +96,18 @@ export const useGameStore = defineStore('game', () => {
     state.currentPlayerId = Object.keys(state.players).find(
       (player) => player !== state.currentPlayerId,
     )!
+
+    manageAllowedPawns()
+  }
+
+  const checkWinner = (payload: GameT.ApplyShieldPayload | GameT.PutPawnPayload) => {
+    const isInstantWin = checkInstantWin()
+    state.potentialWinner = isInstantWin ? state.currentPlayerId : isLineCaptureWin()
+
+    if (!isInstantWin) nextTurn(payload)
+    if (state.currentPlayerId === state.potentialWinner) {
+      state.status = 'finished'
+    }
   }
 
   const applyShield = (payload: GameT.ApplyShieldPayload) => {
@@ -106,7 +119,7 @@ export const useGameStore = defineStore('game', () => {
     state.board[rowIndex][columnIndex].shield.appliedBy = state.currentPlayerId
     state.board[rowIndex][columnIndex].shield.activeInTurn = getLastTurn() + 2
 
-    nextTurn(payload)
+    checkWinner(payload)
   }
 
   const putPawn = (payload: GameT.PutPawnPayload) => {
@@ -129,21 +142,13 @@ export const useGameStore = defineStore('game', () => {
       state.players[state.currentPlayerId].pawns[cellPawn.size]++
     }
 
-    const isInstantWin = checkInstantWin()
-
     state.board[rowIndex][columnIndex].pawn = {
       size: pawnSize,
       playerId: state.currentPlayerId,
     }
     state.players[state.currentPlayerId].pawns[pawnSize]--
-    state.potentialWinner = isInstantWin ? state.currentPlayerId : isLineCaptureWin()
 
-    if (!isInstantWin) nextTurn(payload)
-    if (state.currentPlayerId === state.potentialWinner) {
-      state.status = 'finished'
-    }
-
-    manageAllowedPawns()
+    checkWinner(payload)
   }
 
   return {

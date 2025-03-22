@@ -2,7 +2,7 @@
 import { useGameStore } from '@/stores/game/game.ts'
 import type { Move } from '@/stores/game/types.ts'
 import { computed } from 'vue'
-import Shield from '@/components/Shield.vue'
+import Shield from '@/components/Shield/Shield.vue'
 
 const props = defineProps<{ move: Move }>()
 
