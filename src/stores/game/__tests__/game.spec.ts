@@ -197,6 +197,22 @@ describe('game.store', () => {
     expect(state.potentialWinner).toBe('1')
   })
 
+  it('should check winner on apply shield', () => {
+    const { putPawn, state, lockPawns, applyShield } = useGameStore()
+    lockPawns('1', { small: 3, medium: 3, big: 3 })
+    lockPawns('2', { small: 3, medium: 3, big: 3 })
+
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
+    putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 2 })
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 0 })
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 2 })
+    putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 0 })
+    applyShield({ rowIndex: 1, columnIndex: 2 })
+
+    expect(state.potentialWinner).toBe('1')
+    expect(state.status).toBe('finished')
+  })
+
   it('should find out that player 1 is not a winner because pawn got captured', () => {
     const { putPawn, state, lockPawns } = useGameStore()
     lockPawns('1', { small: 3, medium: 3, big: 3 })
