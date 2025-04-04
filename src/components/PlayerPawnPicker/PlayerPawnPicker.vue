@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import PawnAmountCounter from '@/components/PawnAmountCounter/PawnAmountCounter.vue'
-import { useGameStore } from '@/stores/game/game.ts'
+import { useGameStore } from '@/featuers/game/store/game.ts'
 import { ref, computed } from 'vue'
 import { MAXIMUM_PAWNS_PER_PLAYER } from '@/utils/constants.ts'
-import type { PawnSize } from '@/stores/game/types.ts'
+import type { PawnSize } from '@/featuers/game/store/types.ts'
 
 const props = defineProps<{ playerId: string }>()
 

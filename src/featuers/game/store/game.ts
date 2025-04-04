@@ -1,8 +1,7 @@
 import { reactive } from 'vue'
 import { defineStore } from 'pinia'
-import * as GameT from '@/stores/game/types.ts'
-import * as GameService from '@/services/game.service.ts'
-import type { PutPawnPayload } from '@/stores/game/types.ts'
+import * as GameT from '@/featuers/game/store/types.ts'
+import * as GameService from '@/featuers/game/services/game.service.ts'
 
 export const useGameStore = defineStore('game', () => {
   const state = reactive<GameT.Game>({
@@ -11,8 +10,9 @@ export const useGameStore = defineStore('game', () => {
     currentPlayerId: '',
     players: {},
     turns: {},
-    potentialWinner: undefined,
+    winner: undefined,
     allowedPawns: ['small'],
+    winningLine: [],
   })
 
   const initiateGame = (players: GameT.PlayerPayload[]) => {
@@ -20,6 +20,8 @@ export const useGameStore = defineStore('game', () => {
     state.board = GameService.createBoard()
     state.currentPlayerId = players[0].id
     state.allowedPawns = ['small']
+    state.winningLine = []
+    state.winner = undefined
 
     players.forEach((player) => {
       state.players[player.id] = GameService.createPlayer(player)
@@ -49,38 +51,20 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const isLineCaptureWin = (): string | undefined => {
-    const board = state.board
+    const winningLines = GameService.findWinningLine(state.board)
 
-    const isWinningLine = (line: GameT.Cell[]) => {
-      if (line.some((cell) => !cell.pawn)) return false
-      const playerId = line[0].pawn?.playerId
-      return line.every((cell) => cell.pawn?.playerId === playerId)
+    if (state.winningLine.length > 0) {
+      const winningLine = state.winningLine.find((cell) => winningLines.includes(cell))
+
+      if (winningLine) {
+        const [playerId] = winningLine.split('/')
+        return playerId
+      }
     }
 
-    for (let i = 0; i < 3; i++) {
-      if (isWinningLine([board[i][0], board[i][1], board[i][2]])) return board[i][0].pawn?.playerId
-      if (isWinningLine([board[0][i], board[1][i], board[2][i]])) return board[0][i].pawn?.playerId
-    }
-
-    if (isWinningLine([board[0][0], board[1][1], board[2][2]])) return board[0][0].pawn?.playerId
-    if (isWinningLine([board[0][2], board[1][1], board[2][0]])) return board[0][2].pawn?.playerId
+    state.winningLine = winningLines
 
     return undefined
-  }
-
-  const manageAllowedPawns = () => {
-    const turnsPlayed = Object.keys(state.turns).length
-    const unlockThresholds = [4, 8]
-    const pawnSizes: GameT.PawnSize[] = ['medium', 'big']
-
-    const nextUnlockIndex = state.allowedPawns.length - 1
-
-    if (
-      nextUnlockIndex < unlockThresholds.length &&
-      turnsPlayed >= unlockThresholds[nextUnlockIndex]
-    ) {
-      state.allowedPawns.push(pawnSizes[nextUnlockIndex])
-    }
   }
 
   const getLastTurn = () => {
@@ -102,11 +86,26 @@ export const useGameStore = defineStore('game', () => {
 
   const checkWinner = (payload: GameT.ApplyShieldPayload | GameT.PutPawnPayload) => {
     const isInstantWin = checkInstantWin()
-    state.potentialWinner = isInstantWin ? state.currentPlayerId : isLineCaptureWin()
+    state.winner = isInstantWin ? state.currentPlayerId : isLineCaptureWin()
 
     if (!isInstantWin) nextTurn(payload)
-    if (state.currentPlayerId === state.potentialWinner) {
+    if (state.currentPlayerId === state.winner) {
       state.status = 'finished'
+    }
+  }
+
+  const manageAllowedPawns = () => {
+    const turnsPlayed = Object.keys(state.turns).length
+    const unlockThresholds = [4, 8]
+    const pawnSizes: GameT.PawnSize[] = ['medium', 'big']
+
+    const nextUnlockIndex = state.allowedPawns.length - 1
+
+    if (
+      nextUnlockIndex < unlockThresholds.length &&
+      turnsPlayed >= unlockThresholds[nextUnlockIndex]
+    ) {
+      state.allowedPawns.push(pawnSizes[nextUnlockIndex])
     }
   }
 

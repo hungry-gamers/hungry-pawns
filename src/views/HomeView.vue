@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import TheGame from '@/components/TheGame/TheGame.vue'
-import { useGameStore } from '@/stores/game/game.ts'
+import { useGameStore } from '@/featuers/game/store/game.ts'
 import { computed, onMounted, ref, watch } from 'vue'
-import * as GameT from '@/stores/game/types.ts'
+import * as GameT from '@/featuers/game/store/types.ts'
 import { players } from '@/utils/mocks/game.ts'
 import PlayerPawnPicker from '@/components/PlayerPawnPicker/PlayerPawnPicker.vue'
 
@@ -45,7 +45,7 @@ watch(
 
 <template>
   <div>
-    <div>Pawns eaten: {{ state.players }} --- {{ state.status }}</div>
+    <div>Pawns eaten: {{ state.players }} --- {{ state.status }} --- {{ state.winner }}</div>
     <div v-if="gameStatus === 'pregame'" class="container">
       <PlayerPawnPicker :player-id="playersIds[0]" />
       <PlayerPawnPicker :player-id="playersIds[1]" />

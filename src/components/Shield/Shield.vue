@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useGameStore } from '@/stores/game/game.ts'
+import { useGameStore } from '@/featuers/game/store/game.ts'
 
 const { getPlayers } = useGameStore()
 

@@ -3,7 +3,7 @@ import { createTestingPinia } from '@pinia/testing'
 
 import { mount } from '@vue/test-utils'
 import TheGame from '../TheGame.vue'
-import { useGameStore } from '../../../stores/game/game'
+import { useGameStore } from '../../../featuers/game/store/game.ts'
 
 describe('TheGame', () => {
   const pinia = createTestingPinia({
