@@ -50,7 +50,6 @@ watch(
       <PlayerPawnPicker :player-id="playersIds[0]" />
       <PlayerPawnPicker :player-id="playersIds[1]" />
     </div>
-
     <div v-else class="container">
       <div>
         <button @click="selectPawnSize('small')" :disabled="!areSmallPawnsAllowed">Small</button>
@@ -59,7 +58,9 @@ watch(
 
         <button @click="activateShieldMode">Shield</button>
       </div>
+
       <TheGame :move="move" />
+
       <div>
         <span>How to win</span>
         <div>Capture the line (horizontally, diagonally or vertically) and hold for 1 turn</div>
@@ -72,5 +73,9 @@ watch(
 <style scoped>
 .container {
   margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 </style>

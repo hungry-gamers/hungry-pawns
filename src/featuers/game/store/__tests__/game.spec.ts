@@ -23,7 +23,7 @@ describe('game.store', () => {
     expect(state.status).toBe('pregame')
     expect(state.allowedPawns).toEqual(['small'])
     expect(state.winner).toBeUndefined()
-    expect(state.winningLine).toEqual([])
+    expect(state.sequences).toEqual([])
     expect(state.players).toEqual({
       1: player,
       2: player,

@@ -12,7 +12,7 @@ export const useGameStore = defineStore('game', () => {
     turns: {},
     winner: undefined,
     allowedPawns: ['small'],
-    winningLine: [],
+    sequences: [],
   })
 
   const initiateGame = (players: GameT.PlayerPayload[]) => {
@@ -20,7 +20,7 @@ export const useGameStore = defineStore('game', () => {
     state.board = GameService.createBoard()
     state.currentPlayerId = players[0].id
     state.allowedPawns = ['small']
-    state.winningLine = []
+    state.sequences = []
     state.winner = undefined
 
     players.forEach((player) => {
@@ -51,18 +51,18 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const isLineCaptureWin = (): string | undefined => {
-    const winningLines = GameService.findWinningLine(state.board)
+    const sequences = GameService.findWinningLine(state.board)
 
-    if (state.winningLine.length > 0) {
-      const winningLine = state.winningLine.find((cell) => winningLines.includes(cell))
+    if (state.sequences.length > 0) {
+      const sequence = state.sequences.find((cell) => sequences.includes(cell))
 
-      if (winningLine) {
-        const [playerId] = winningLine.split('/')
+      if (sequence) {
+        const [playerId] = sequence.split('/')
         return playerId
       }
     }
 
-    state.winningLine = winningLines
+    state.sequences = sequences
 
     return undefined
   }
@@ -95,15 +95,13 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const manageAllowedPawns = () => {
-    const turnsPlayed = Object.keys(state.turns).length
     const unlockThresholds = [4, 8]
     const pawnSizes: GameT.PawnSize[] = ['medium', 'big']
-
     const nextUnlockIndex = state.allowedPawns.length - 1
 
     if (
       nextUnlockIndex < unlockThresholds.length &&
-      turnsPlayed >= unlockThresholds[nextUnlockIndex]
+      getLastTurn() >= unlockThresholds[nextUnlockIndex]
     ) {
       state.allowedPawns.push(pawnSizes[nextUnlockIndex])
     }

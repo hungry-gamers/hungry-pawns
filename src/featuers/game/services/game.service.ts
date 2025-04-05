@@ -1,5 +1,5 @@
 import * as GameT from '@/featuers/game/store/types.ts'
-import type { WinningLine } from '@/featuers/game/store/types.ts'
+import type { Sequence } from '@/featuers/game/store/types.ts'
 
 export const createPlayer = (player: GameT.PlayerPayload): GameT.Player => ({
   pawns: { ...player.pawns },
@@ -22,8 +22,8 @@ export const createBoard = () => {
   return Array.from({ length: 3 }, () => Array.from({ length: 3 }, () => createCell()))
 }
 
-export const findWinningLine = (board: GameT.Board): WinningLine[] => {
-  const line: WinningLine[] = []
+export const findWinningLine = (board: GameT.Board): Sequence[] => {
+  const line: Sequence[] = []
 
   const isWinningLine = (line: GameT.Cell[]) => {
     if (line.some((cell) => !cell.pawn)) return false
