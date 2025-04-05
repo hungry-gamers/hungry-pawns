@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useGameStore } from '../game'
-import { players } from '../../../utils/mocks/game'
+import { useGameStore } from '../game.ts'
+import { players } from '../../../../utils/mocks/game.ts'
 
 describe('game.store - shield', () => {
   beforeEach(() => {

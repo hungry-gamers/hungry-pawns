@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { useGameStore } from '@/stores/game/game.ts'
-import type { Move } from '@/stores/game/types.ts'
+import { useGameStore } from '@/featuers/game/store/game.ts'
+import type { Move } from '@/featuers/game/store/types.ts'
 import { computed } from 'vue'
 import Shield from '@/components/Shield/Shield.vue'
+import ThePawn from '@/components/ThePawn/ThePawn.vue'
 
 const props = defineProps<{ move: Move }>()
 
@@ -42,13 +43,25 @@ const onCellClick = (rowIndex: number, columnIndex: number) => {
           :owner-id="cell.shield.appliedBy"
         />
 
-        <span v-if="cell.pawn">{{ cell.pawn.size }}</span>
+        <ThePawn
+          v-if="cell.pawn"
+          :size="cell.pawn.size"
+          :color="cell.pawn?.playerId === players[0] ? 'darkorange' : 'dodgerblue'"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+.cell:hover > :deep(svg .happy) {
+  visibility: hidden;
+}
+
+.cell:hover > :deep(svg .scared) {
+  visibility: visible;
+}
+
 #board {
   display: grid;
   grid-template-rows: repeat(3, 200px);
@@ -60,18 +73,6 @@ const onCellClick = (rowIndex: number, columnIndex: number) => {
   display: grid;
   grid-template-columns: repeat(3, 200px);
   gap: 5px;
-}
-
-.shield {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  opacity: 0.3;
-  background: rgba(255, 255, 255, 0.3);
-  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(3px);
 }
 
 .cell {

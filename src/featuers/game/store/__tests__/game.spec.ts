@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useGameStore } from '../game'
-import { players } from '../../../utils/mocks/game'
+import { useGameStore } from '../game.ts'
+import { players } from '../../../../utils/mocks/game.ts'
 
 describe('game.store', () => {
   beforeEach(() => {
@@ -22,6 +22,8 @@ describe('game.store', () => {
     expect(state.currentPlayerId).toBe('1')
     expect(state.status).toBe('pregame')
     expect(state.allowedPawns).toEqual(['small'])
+    expect(state.winner).toBeUndefined()
+    expect(state.sequences).toEqual([])
     expect(state.players).toEqual({
       1: player,
       2: player,
@@ -157,10 +159,8 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 2 })
 
-    expect(state.potentialWinner).toBe('1')
-
     putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 2 })
-    expect(state.potentialWinner).toBe('1')
+    expect(state.winner).toBe('1')
   })
 
   it('should find a winner for 3 vertically', () => {
@@ -174,10 +174,8 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
     putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 0 })
 
-    expect(state.potentialWinner).toBe('1')
-
     putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 1 })
-    expect(state.potentialWinner).toBe('1')
+    expect(state.winner).toBe('1')
   })
 
   it('should find a winner for 3 diagonally', () => {
@@ -191,10 +189,8 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 1 })
     putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 2 })
 
-    expect(state.potentialWinner).toBe('1')
-
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 2 })
-    expect(state.potentialWinner).toBe('1')
+    expect(state.winner).toBe('1')
   })
 
   it('should check winner on apply shield', () => {
@@ -209,7 +205,7 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 0 })
     applyShield({ rowIndex: 1, columnIndex: 2 })
 
-    expect(state.potentialWinner).toBe('1')
+    expect(state.winner).toBe('1')
     expect(state.status).toBe('finished')
   })
 
@@ -224,10 +220,8 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 1 })
     putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 2 })
 
-    expect(state.potentialWinner).toBe('1')
-
     putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 0 })
-    expect(state.potentialWinner).toBeUndefined()
+    expect(state.winner).toBeUndefined()
   })
 
   it('should allow reuse of pawns captured by their owner', () => {
@@ -245,7 +239,24 @@ describe('game.store', () => {
     expect(state.players['1'].pawns.small).toBe(2)
   })
 
-  it('should finish the game instantly when player ate 5 enemy pawns', () => {
+  it('should find out that player 1 captured line first so he is a winner', () => {
+    const { putPawn, state, lockPawns } = useGameStore()
+    lockPawns('1', { small: 6, medium: 3, big: 0 })
+    lockPawns('2', { small: 3, medium: 3, big: 3 })
+
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 2 })
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 1 })
+
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 2 })
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
+
+    putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 2 })
+    putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 1 })
+
+    expect(state.winner).toBe('1')
+  })
+
+  it('should finish the game instantly when player captured 5 enemy pawns', () => {
     const { putPawn, state, lockPawns } = useGameStore()
     lockPawns('1', { small: 6, medium: 3, big: 0 })
     lockPawns('2', { small: 3, medium: 3, big: 3 })
@@ -271,7 +282,7 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 2 })
     putPawn({ pawnSize: 'big', rowIndex: 2, columnIndex: 2 })
 
-    expect(state.potentialWinner).toBe('2')
+    expect(state.winner).toBe('2')
     expect(state.status).toBe('finished')
   })
 })
