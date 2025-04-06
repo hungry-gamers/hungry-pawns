@@ -1,7 +1,8 @@
-import * as GameT from '@/featuers/game/store/types.ts'
-import type { Sequence } from '@/featuers/game/store/types.ts'
+import * as GameT from '@/featuers/game/types.ts'
+import * as PlayersT from '@/featuers/players/types.ts'
+import type { Sequence } from '@/featuers/game/types.ts'
 
-export const createPlayer = (player: GameT.PlayerPayload): GameT.Player => ({
+export const createPlayer = (player: PlayersT.PlayerPayload): PlayersT.Player => ({
   pawns: { ...player.pawns },
   capturedPawnsCounter: 0,
   arePawnsLocked: false,

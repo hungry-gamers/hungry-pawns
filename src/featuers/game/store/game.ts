@@ -1,21 +1,24 @@
 import { reactive } from 'vue'
 import { defineStore } from 'pinia'
-import * as GameT from '@/featuers/game/store/types.ts'
+import * as GameT from '@/featuers/game/types.ts'
+import * as PlayersT from '@/featuers/players/types'
 import * as GameService from '@/featuers/game/services/game.service.ts'
+import { usePlayersStore } from '@/featuers/players/store/players.ts'
 
 export const useGameStore = defineStore('game', () => {
+  const playersStore = usePlayersStore()
+
   const state = reactive<GameT.Game>({
     status: 'not-initialized',
     board: GameService.createBoard(),
     currentPlayerId: '',
-    players: {},
     turns: {},
     winner: undefined,
     allowedPawns: ['small'],
     sequences: [],
   })
 
-  const initiateGame = (players: GameT.PlayerPayload[]) => {
+  const initiateGame = (players: PlayersT.PlayerPayload[]) => {
     state.status = 'pregame'
     state.board = GameService.createBoard()
     state.currentPlayerId = players[0].id
@@ -23,31 +26,20 @@ export const useGameStore = defineStore('game', () => {
     state.sequences = []
     state.winner = undefined
 
-    players.forEach((player) => {
-      state.players[player.id] = GameService.createPlayer(player)
-    })
-  }
-
-  const getPlayers = (): string[] => {
-    return Object.keys(state.players)
+    playersStore.createPlayers(players)
   }
 
   const lockPawns = (playerId: string, pawns: Record<GameT.PawnSize, number>) => {
-    if (state.players[playerId].arePawnsLocked) return
-    state.players[playerId].pawns = { ...pawns }
-    state.players[playerId].arePawnsLocked = true
-    const locked = Object.values(state.players).filter(({ arePawnsLocked }) => arePawnsLocked)
-
-    if (locked.length === getPlayers().length) {
+    if (playersStore.lockPawns(playerId, pawns)) {
       state.status = 'in-progress'
     }
   }
 
   const checkInstantWin = () => {
     const CAPTURED_PAWNS_FOR_INSTANT_WIN = 5
-    const pawnsCapturedByPlayer = state.players[state.currentPlayerId].capturedPawnsCounter
+    const capturedCounter = playersStore.getCapturedPawnsCounter(state.currentPlayerId)
 
-    return pawnsCapturedByPlayer === CAPTURED_PAWNS_FOR_INSTANT_WIN
+    return capturedCounter === CAPTURED_PAWNS_FOR_INSTANT_WIN
   }
 
   const isLineCaptureWin = (): string | undefined => {
@@ -77,9 +69,9 @@ export const useGameStore = defineStore('game', () => {
 
   const nextTurn = (payload: GameT.PutPawnPayload | GameT.ApplyShieldPayload) => {
     state.turns[getLastTurn() + 1] = { playerId: state.currentPlayerId, move: payload }
-    state.currentPlayerId = Object.keys(state.players).find(
-      (player) => player !== state.currentPlayerId,
-    )!
+    state.currentPlayerId = playersStore
+      .getPlayers()
+      .find((player) => player !== state.currentPlayerId)!
 
     manageAllowedPawns()
   }
@@ -95,7 +87,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const manageAllowedPawns = () => {
-    const unlockThresholds = [4, 8]
+    const unlockThresholds = [4, 10]
     const pawnSizes: GameT.PawnSize[] = ['medium', 'big']
     const nextUnlockIndex = state.allowedPawns.length - 1
 
@@ -108,11 +100,9 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const applyShield = (payload: GameT.ApplyShieldPayload) => {
-    if (!state.players[state.currentPlayerId].specialMoves.includes('shield')) return
+    if (playersStore.useSpecialMove(state.currentPlayerId, 'shield') === 'not-allowed') return
     const { rowIndex, columnIndex } = payload
-    state.players[state.currentPlayerId].specialMoves = state.players[
-      state.currentPlayerId
-    ].specialMoves.filter((move) => move !== 'shield')
+
     state.board[rowIndex][columnIndex].shield.appliedBy = state.currentPlayerId
     state.board[rowIndex][columnIndex].shield.activeInTurn = getLastTurn() + 2
 
@@ -124,7 +114,7 @@ export const useGameStore = defineStore('game', () => {
     const cellPawn = state.board[rowIndex][columnIndex].pawn
     const isProtected = state.board[rowIndex][columnIndex].shield.activeInTurn === getCurrentTurn()
     const moveNotAllowed =
-      !state.players[state.currentPlayerId].pawns[pawnSize] ||
+      !playersStore.isPawnAvailableForPlayer(state.currentPlayerId, payload.pawnSize) ||
       !state.allowedPawns.includes(payload.pawnSize) ||
       isProtected
 
@@ -133,17 +123,17 @@ export const useGameStore = defineStore('game', () => {
     if (cellPawn) {
       if (!GameService.isPawnBigger(pawnSize, cellPawn.size)) return
       if (cellPawn.playerId !== state.currentPlayerId) {
-        state.players[state.currentPlayerId].capturedPawnsCounter++
+        playersStore.updatePlayerCapturedPawns(state.currentPlayerId)
       }
 
-      state.players[state.currentPlayerId].pawns[cellPawn.size]++
+      playersStore.manipulatePawnAmount(state.currentPlayerId, cellPawn.size, 1)
     }
 
     state.board[rowIndex][columnIndex].pawn = {
       size: pawnSize,
       playerId: state.currentPlayerId,
     }
-    state.players[state.currentPlayerId].pawns[pawnSize]--
+    playersStore.manipulatePawnAmount(state.currentPlayerId, pawnSize, -1)
 
     checkWinner(payload)
   }
@@ -152,7 +142,6 @@ export const useGameStore = defineStore('game', () => {
     state,
     initiateGame,
     putPawn,
-    getPlayers,
     lockPawns,
     applyShield,
     getCurrentTurn,

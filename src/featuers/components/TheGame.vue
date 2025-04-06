@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { useGameStore } from '@/featuers/game/store/game.ts'
-import type { Move } from '@/featuers/game/store/types.ts'
+import type { Move } from '@/featuers/game/types.ts'
 import { computed } from 'vue'
-import Shield from '@/components/Shield/Shield.vue'
-import ThePawn from '@/components/ThePawn/ThePawn.vue'
+import Shield from '@/featuers/components/Shield.vue'
+import ThePawn from '@/featuers/components/ThePawn.vue'
+import { usePlayersStore } from '@/featuers/players/store/players.ts'
 
 const props = defineProps<{ move: Move }>()
 
-const { putPawn, state, getPlayers, applyShield, getCurrentTurn } = useGameStore()
+const { putPawn, state, applyShield, getCurrentTurn } = useGameStore()
+const { getPlayers } = usePlayersStore()
 
 const players = computed(getPlayers)
 

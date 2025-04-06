@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PlayerPawnPicker > should render properly 1`] = `
+"<div><span>Player: 1</span>
+  <div>
+    <div><span>small</span><button data-test-id="decrease-button"> - </button><span>3</span><button disabled="" data-test-id="increase-button"> + </button></div>
+    <div><span>medium</span><button data-test-id="decrease-button"> - </button><span>3</span><button disabled="" data-test-id="increase-button"> + </button></div>
+    <div><span>big</span><button data-test-id="decrease-button"> - </button><span>3</span><button disabled="" data-test-id="increase-button"> + </button></div>
+  </div><button data-test-id="lock-pawns-button"> Lock </button>
+</div>"
+`;

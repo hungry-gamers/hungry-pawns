@@ -20,21 +20,12 @@ export type Sequence = `${string}/${number}-${number}/${number}-${number}/${numb
 
 export type Cell = { pawn: Pawn | null; shield: { activeInTurn: number; appliedBy: string } }
 export type Board = Cell[][]
-export type Player = {
-  pawns: Record<PawnSize, number>
-  capturedPawnsCounter: number
-  arePawnsLocked: boolean
-  specialMoves: SpecialMoveName[]
-}
-
-export type PlayerPayload = { id: string; pawns: Player['pawns'] }
 
 export type PutPawnPayload = { pawnSize: PawnSize } & Location
 
 export type Game = {
   status: 'not-initialized' | 'pregame' | 'in-progress' | 'finished'
   board: Board
-  players: Record<string, Player>
   currentPlayerId: string
   turns: Record<number, { playerId: string; move: PutPawnPayload | ApplyShieldPayload }>
   winner: string | undefined

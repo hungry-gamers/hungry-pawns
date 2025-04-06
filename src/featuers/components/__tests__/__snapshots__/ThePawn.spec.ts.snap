@@ -1,0 +1,37 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`The Pawn > should match snapshot for big 1`] = `
+"<svg data-v-666c4eac="" width="100" height="120" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" class="transition-transform duration-200 hover:scale-105">
+  <circle data-v-666c4eac="" cx="50" cy="60" r="40" fill="red" stroke="#000" stroke-width="4"></circle>
+  <circle data-v-666c4eac="" class="happy" cx="35" cy="50" r="5" fill="#000"></circle>
+  <circle data-v-666c4eac="" class="happy" cx="65" cy="50" r="5" fill="#000"></circle>
+  <path data-v-666c4eac="" class="happy" d="M35 70 Q50 85 65 70" stroke="#000" stroke-width="3" fill="none"></path>
+  <circle data-v-666c4eac="" class="scared" cx="35" cy="50" r="5" fill="white"></circle>
+  <circle data-v-666c4eac="" class="scared" cx="65" cy="50" r="5" fill="white"></circle>
+  <line data-v-666c4eac="" class="scared" x1="35" y1="70" x2="65" y2="70" stroke="black" stroke-width="3"></line>
+</svg>"
+`;
+
+exports[`The Pawn > should match snapshot for medium 1`] = `
+"<svg data-v-666c4eac="" width="70" height="84" viewBox="0 0 70 84" xmlns="http://www.w3.org/2000/svg" class="transition-transform duration-200 hover:scale-105">
+  <circle data-v-666c4eac="" cx="35" cy="42" r="28" fill="red" stroke="#000" stroke-width="2.8"></circle>
+  <circle data-v-666c4eac="" class="happy" cx="24.5" cy="35" r="3.5" fill="#000"></circle>
+  <circle data-v-666c4eac="" class="happy" cx="45.5" cy="35" r="3.5" fill="#000"></circle>
+  <path data-v-666c4eac="" class="happy" d="M24.5 49 Q35 59.49999999999999 45.5 49" stroke="#000" stroke-width="2.0999999999999996" fill="none"></path>
+  <circle data-v-666c4eac="" class="scared" cx="24.5" cy="35" r="3.5" fill="white"></circle>
+  <circle data-v-666c4eac="" class="scared" cx="45.5" cy="35" r="3.5" fill="white"></circle>
+  <line data-v-666c4eac="" class="scared" x1="24.5" y1="49" x2="45.5" y2="49" stroke="black" stroke-width="2.0999999999999996"></line>
+</svg>"
+`;
+
+exports[`The Pawn > should match snapshot for small 1`] = `
+"<svg data-v-666c4eac="" width="50" height="60" viewBox="0 0 50 60" xmlns="http://www.w3.org/2000/svg" class="transition-transform duration-200 hover:scale-105">
+  <circle data-v-666c4eac="" cx="25" cy="30" r="20" fill="red" stroke="#000" stroke-width="2"></circle>
+  <circle data-v-666c4eac="" class="happy" cx="17.5" cy="25" r="2.5" fill="#000"></circle>
+  <circle data-v-666c4eac="" class="happy" cx="32.5" cy="25" r="2.5" fill="#000"></circle>
+  <path data-v-666c4eac="" class="happy" d="M17.5 35 Q25 42.5 32.5 35" stroke="#000" stroke-width="1.5" fill="none"></path>
+  <circle data-v-666c4eac="" class="scared" cx="17.5" cy="25" r="2.5" fill="white"></circle>
+  <circle data-v-666c4eac="" class="scared" cx="32.5" cy="25" r="2.5" fill="white"></circle>
+  <line data-v-666c4eac="" class="scared" x1="17.5" y1="35" x2="32.5" y2="35" stroke="black" stroke-width="1.5"></line>
+</svg>"
+`;

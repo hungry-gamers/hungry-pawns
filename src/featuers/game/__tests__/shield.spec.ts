@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useGameStore } from '../game.ts'
-import { players } from '../../../../utils/mocks/game.ts'
+import { useGameStore } from '../store/game.ts'
+import { players } from '@/utils/mocks/game.ts'
+import { usePlayersStore } from '@/featuers/players/store/players.ts'
 
 describe('game.store - shield', () => {
   beforeEach(() => {
@@ -15,11 +16,15 @@ describe('game.store - shield', () => {
 
   it('should apply shield to the empty cell', () => {
     const { state, applyShield } = useGameStore()
+    const spy = vi.spyOn(usePlayersStore(), 'useSpecialMove')
     applyShield({ rowIndex: 0, columnIndex: 0 })
 
     expect(state.board[0][0].shield.activeInTurn).toBe(2)
     expect(state.board[0][0].shield.appliedBy).toBe('1')
-    expect(state.players['1'].specialMoves.includes('shield')).toBe(false)
+
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy).toHaveBeenCalledWith('1', 'shield')
+    expect(spy).toHaveReturnedWith('used')
   })
 
   it('should allow to apply shield only once per game per player', () => {
