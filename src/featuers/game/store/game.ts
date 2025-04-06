@@ -1,6 +1,7 @@
 import { reactive } from 'vue'
 import { defineStore } from 'pinia'
 import * as GameT from '@/featuers/game/types.ts'
+import * as PlayersT from '@/featuers/players/types'
 import * as GameService from '@/featuers/game/services/game.service.ts'
 import { usePlayersStore } from '@/featuers/players/store/players.ts'
 
@@ -17,7 +18,7 @@ export const useGameStore = defineStore('game', () => {
     sequences: [],
   })
 
-  const initiateGame = (players: GameT.PlayerPayload[]) => {
+  const initiateGame = (players: PlayersT.PlayerPayload[]) => {
     state.status = 'pregame'
     state.board = GameService.createBoard()
     state.currentPlayerId = players[0].id
@@ -36,10 +37,9 @@ export const useGameStore = defineStore('game', () => {
 
   const checkInstantWin = () => {
     const CAPTURED_PAWNS_FOR_INSTANT_WIN = 5
+    const capturedCounter = playersStore.getCapturedPawnsCounter(state.currentPlayerId)
 
-    return (
-      playersStore.getCapturedPawnsCounter(state.currentPlayerId) === CAPTURED_PAWNS_FOR_INSTANT_WIN
-    )
+    return capturedCounter === CAPTURED_PAWNS_FOR_INSTANT_WIN
   }
 
   const isLineCaptureWin = (): string | undefined => {

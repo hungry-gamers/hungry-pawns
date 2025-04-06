@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import ThePawn from '@/components/ThePawn/ThePawn.vue'
+import ThePawn from '@/featuers/components/ThePawn.vue'
 
 describe('The Pawn', () => {
   it('should match snapshot for small', () => {

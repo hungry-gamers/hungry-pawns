@@ -10,3 +10,8 @@ export type Player = {
 export type PlayerPayload = { id: string; pawns: Player['pawns'] }
 
 export type SpecialMoveStatus = 'not-allowed' | 'used'
+
+export type PlayersStore = {
+  players: Record<string, Player>
+  pawnsStatus: 'locked' | 'picking'
+}

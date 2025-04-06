@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PawnAmountCounter from '@/components/PawnAmountCounter/PawnAmountCounter.vue'
+import PawnAmountCounter from '@/featuers/players/components/PawnAmountCounter.vue'
 import { ref, computed } from 'vue'
 import { MAXIMUM_PAWNS_PER_PLAYER } from '@/utils/constants.ts'
 import type { PawnSize } from '@/featuers/game/types.ts'

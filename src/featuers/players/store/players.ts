@@ -3,14 +3,9 @@ import { reactive } from 'vue'
 import * as PlayersT from '@/featuers/players/types.ts'
 import * as PlayersService from '@/featuers/players/services/players.service.ts'
 import * as GameT from '@/featuers/game/types.ts'
-import type { PawnSize, SpecialMoveName } from '@/featuers/game/types.ts'
-import type { SpecialMoveStatus } from '@/featuers/players/types.ts'
 
 export const usePlayersStore = defineStore('players', () => {
-  const state = reactive<{
-    players: Record<string, PlayersT.Player>
-    pawnsStatus: 'locked' | 'picking'
-  }>({
+  const state = reactive<PlayersT.PlayersStore>({
     players: {},
     pawnsStatus: 'picking',
   })
@@ -46,11 +41,15 @@ export const usePlayersStore = defineStore('players', () => {
     return Object.keys(state.players)
   }
 
-  const isPawnAvailableForPlayer = (playerId: string, pawnSize: PawnSize) => {
+  const isPawnAvailableForPlayer = (playerId: string, pawnSize: GameT.PawnSize) => {
     return state.players[playerId].pawns[pawnSize]
   }
 
-  const manipulatePawnAmount = (playerId: string, pawnSize: PawnSize, changeAmountBy: number) => {
+  const manipulatePawnAmount = (
+    playerId: string,
+    pawnSize: GameT.PawnSize,
+    changeAmountBy: number,
+  ) => {
     state.players[playerId].pawns[pawnSize] += changeAmountBy
   }
 
@@ -58,7 +57,10 @@ export const usePlayersStore = defineStore('players', () => {
     state.players[playerId].capturedPawnsCounter++
   }
 
-  const useSpecialMove = (playerId: string, moveName: SpecialMoveName): SpecialMoveStatus => {
+  const useSpecialMove = (
+    playerId: string,
+    moveName: GameT.SpecialMoveName,
+  ): PlayersT.SpecialMoveStatus => {
     if (!state.players[playerId].specialMoves.includes('shield')) return 'not-allowed'
     state.players[playerId].specialMoves = state.players[playerId].specialMoves.filter(
       (move) => move !== moveName,
