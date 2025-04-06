@@ -1,5 +1,5 @@
-import * as GameT from '@/featuers/game/store/types.ts'
-import type { Sequence } from '@/featuers/game/store/types.ts'
+import * as GameT from '@/featuers/game/types.ts'
+import type { Sequence } from '@/featuers/game/types.ts'
 
 export const createPlayer = (player: GameT.PlayerPayload): GameT.Player => ({
   pawns: { ...player.pawns },

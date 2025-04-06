@@ -34,7 +34,6 @@ export type PutPawnPayload = { pawnSize: PawnSize } & Location
 export type Game = {
   status: 'not-initialized' | 'pregame' | 'in-progress' | 'finished'
   board: Board
-  players: Record<string, Player>
   currentPlayerId: string
   turns: Record<number, { playerId: string; move: PutPawnPayload | ApplyShieldPayload }>
   winner: string | undefined

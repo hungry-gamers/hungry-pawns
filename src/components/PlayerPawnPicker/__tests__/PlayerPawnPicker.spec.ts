@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import PlayerPawnPicker from '../PlayerPawnPicker.vue'
 import { mount } from '@vue/test-utils'
 import { createTestingPinia } from '@pinia/testing'
-import { useGameStore } from '../../../featuers/game/store/game.ts'
+import { useGameStore } from '@/featuers/game/store/game.ts'
 
 describe('PlayerPawnPicker', () => {
   const wrapper = mount(PlayerPawnPicker, {

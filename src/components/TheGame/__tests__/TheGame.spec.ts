@@ -3,7 +3,8 @@ import { createTestingPinia } from '@pinia/testing'
 
 import { mount } from '@vue/test-utils'
 import TheGame from '../TheGame.vue'
-import { useGameStore } from '../../../featuers/game/store/game.ts'
+import { useGameStore } from '@/featuers/game/store/game.ts'
+import { usePlayersStore } from '@/featuers/players/store/players.ts'
 
 describe('TheGame', () => {
   const pinia = createTestingPinia({
@@ -11,7 +12,8 @@ describe('TheGame', () => {
   })
 
   const gameStore = useGameStore()
-  gameStore.getPlayers = vi.fn(() => ['1', '2'])
+  const playersStore = usePlayersStore()
+  playersStore.getPlayers = vi.fn(() => ['1', '2'])
 
   const wrapper = mount(TheGame, {
     props: { move: { size: 'small', mode: 'pawn' } },

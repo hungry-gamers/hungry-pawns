@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PawnSize } from '@/featuers/game/store/types.ts'
+import type { PawnSize } from '@/featuers/game/types.ts'
 import { computed } from 'vue'
 
 const props = defineProps<{

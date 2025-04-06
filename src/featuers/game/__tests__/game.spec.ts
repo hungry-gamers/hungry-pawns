@@ -1,33 +1,36 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useGameStore } from '../game.ts'
-import { players } from '../../../../utils/mocks/game.ts'
+import { useGameStore } from '../store/game.ts'
+import { players } from '@/utils/mocks/game.ts'
+import { usePlayersStore } from '@/featuers/players/store/players.ts'
 
 describe('game.store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     const { initiateGame } = useGameStore()
+    const spy = vi.spyOn(usePlayersStore(), 'createPlayers')
 
     initiateGame(players)
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy).toHaveBeenCalledWith(players)
+    vi.clearAllMocks()
   })
 
+  const setupGame = () => {
+    const { lockPawns } = useGameStore()
+    lockPawns('1', { small: 3, medium: 3, big: 3 })
+    lockPawns('2', { small: 3, medium: 3, big: 3 })
+  }
+
   it('should initiate game', () => {
-    const player = {
-      pawns: { small: 3, medium: 3, big: 3 },
-      capturedPawnsCounter: 0,
-      arePawnsLocked: false,
-      specialMoves: ['shield'],
-    }
     const { state } = useGameStore()
+
     expect(state.currentPlayerId).toBe('1')
     expect(state.status).toBe('pregame')
     expect(state.allowedPawns).toEqual(['small'])
     expect(state.winner).toBeUndefined()
     expect(state.sequences).toEqual([])
-    expect(state.players).toEqual({
-      1: player,
-      2: player,
-    })
+
     expect(state.board.flat()).toEqual(
       Array(9).fill({ shield: { activeInTurn: -1, appliedBy: '' }, pawn: null }),
     )
@@ -41,21 +44,21 @@ describe('game.store', () => {
   })
 
   it('should put pawn in empty cell and switch turn', () => {
-    const { state, putPawn, lockPawns } = useGameStore()
-    lockPawns('1', { small: 3, medium: 3, big: 3 })
-    lockPawns('2', { small: 3, medium: 3, big: 3 })
+    const { state, putPawn } = useGameStore()
+    const spy = vi.spyOn(usePlayersStore(), 'manipulatePawnAmount')
+    setupGame()
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
 
     expect(state.currentPlayerId).toBe('2')
-    expect(state.players[1].pawns.small).toBe(2)
+    expect(spy).toBeCalledTimes(1)
+    expect(spy).toHaveBeenCalledWith('1', 'small', -1)
     expect(state.board[0][0].pawn).toEqual({ size: 'small', playerId: '1' })
     expect(state.currentPlayerId).toBe('2')
   })
 
   it('should replace smaller pawn with bigger one', () => {
-    const { state, putPawn, lockPawns } = useGameStore()
-    lockPawns('1', { small: 3, medium: 3, big: 3 })
-    lockPawns('2', { small: 3, medium: 3, big: 3 })
+    const { state, putPawn } = useGameStore()
+    setupGame()
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 1 })
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 0 })
@@ -66,9 +69,8 @@ describe('game.store', () => {
   })
 
   it('should not replace bigger pawn with smaller one', () => {
-    const { state, putPawn, lockPawns } = useGameStore()
-    lockPawns('1', { small: 3, medium: 3, big: 3 })
-    lockPawns('2', { small: 3, medium: 3, big: 3 })
+    const { state, putPawn } = useGameStore()
+    setupGame()
 
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 1 })
@@ -80,30 +82,22 @@ describe('game.store', () => {
     expect(state.board[0][0].pawn).toEqual({ size: 'medium', playerId: '1' })
   })
 
-  it('should return players ids', () => {
-    const { getPlayers } = useGameStore()
-
-    expect(getPlayers()).toEqual(['1', '2'])
-  })
-
   it('should lock pawns for player', () => {
     const { state, lockPawns } = useGameStore()
-
+    const spy = vi.spyOn(usePlayersStore(), 'lockPawns')
     lockPawns('1', { small: 3, medium: 5, big: 1 })
     expect(state.status).toBe('pregame')
-    expect(state.players['1'].arePawnsLocked).toBe(true)
-    expect(state.players['1'].pawns).toEqual({ small: 3, medium: 5, big: 1 })
+    expect(spy).toBeCalledTimes(1)
+    expect(spy).toBeCalledWith('1', { small: 3, medium: 5, big: 1 })
     lockPawns('2', { small: 2, medium: 4, big: 3 })
-    expect(state.players['2'].pawns).toEqual({ small: 2, medium: 4, big: 3 })
-
+    expect(spy).toBeCalledTimes(2)
+    expect(spy).toBeCalledWith('2', { small: 2, medium: 4, big: 3 })
     expect(state.status).toBe('in-progress')
-    expect(state.players['2'].arePawnsLocked).toBe(true)
   })
 
   it('should track all turns played in the game', () => {
-    const { state, putPawn, lockPawns } = useGameStore()
-    lockPawns('1', { small: 3, medium: 3, big: 3 })
-    lockPawns('2', { small: 3, medium: 3, big: 3 })
+    const { state, putPawn } = useGameStore()
+    setupGame()
 
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 1 })
@@ -115,9 +109,8 @@ describe('game.store', () => {
   })
 
   it('should not allow player to put pawn on board when amount of pawns of selected size is 0', () => {
-    const { putPawn, state, lockPawns } = useGameStore()
-    lockPawns('1', { small: 3, medium: 3, big: 3 })
-    lockPawns('2', { small: 3, medium: 3, big: 3 })
+    const { putPawn, state } = useGameStore()
+    setupGame()
 
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 2 })
@@ -131,27 +124,36 @@ describe('game.store', () => {
   })
 
   it('should count captured pawns per player', () => {
-    const { putPawn, state, lockPawns } = useGameStore()
-    lockPawns('1', { small: 3, medium: 3, big: 3 })
-    lockPawns('2', { small: 3, medium: 3, big: 3 })
+    const { putPawn } = useGameStore()
+    setupGame()
+    const spy = vi.spyOn(usePlayersStore(), 'getCapturedPawnsCounter')
+    const manipulateSpy = vi.spyOn(usePlayersStore(), 'manipulatePawnAmount')
 
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 1 })
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 2 })
-    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 1 })
-    expect(state.players['1'].capturedPawnsCounter).toBe(1)
-    expect(state.players['1'].pawns.small).toBe(2)
 
+    vi.clearAllMocks()
+
+    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 1 })
+
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(manipulateSpy).toHaveBeenCalledTimes(2)
+    expect(spy).toHaveBeenCalledWith('1')
+    expect(manipulateSpy).toHaveBeenCalledWith('1', 'medium', -1)
+
+    vi.clearAllMocks()
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
-    expect(state.players['2'].capturedPawnsCounter).toBe(1)
-    expect(state.players['2'].pawns.small).toBe(2)
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(manipulateSpy).toHaveBeenCalledTimes(2)
+    expect(spy).toHaveBeenCalledWith('2')
+    expect(manipulateSpy).toHaveBeenCalledWith('2', 'medium', -1)
   })
 
   it('should find a winner for 3 horizontally', () => {
-    const { putPawn, state, lockPawns } = useGameStore()
-    lockPawns('1', { small: 3, medium: 3, big: 3 })
-    lockPawns('2', { small: 3, medium: 3, big: 3 })
+    const { putPawn, state } = useGameStore()
+    setupGame()
 
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 0 })
@@ -164,9 +166,8 @@ describe('game.store', () => {
   })
 
   it('should find a winner for 3 vertically', () => {
-    const { putPawn, state, lockPawns } = useGameStore()
-    lockPawns('1', { small: 3, medium: 3, big: 3 })
-    lockPawns('2', { small: 3, medium: 3, big: 3 })
+    const { putPawn, state } = useGameStore()
+    setupGame()
 
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 1 })
@@ -179,9 +180,8 @@ describe('game.store', () => {
   })
 
   it('should find a winner for 3 diagonally', () => {
-    const { putPawn, state, lockPawns } = useGameStore()
-    lockPawns('1', { small: 3, medium: 3, big: 3 })
-    lockPawns('2', { small: 3, medium: 3, big: 3 })
+    const { putPawn, state } = useGameStore()
+    setupGame()
 
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 1 })
@@ -194,9 +194,8 @@ describe('game.store', () => {
   })
 
   it('should check winner on apply shield', () => {
-    const { putPawn, state, lockPawns, applyShield } = useGameStore()
-    lockPawns('1', { small: 3, medium: 3, big: 3 })
-    lockPawns('2', { small: 3, medium: 3, big: 3 })
+    const { putPawn, state, applyShield } = useGameStore()
+    setupGame()
 
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 2 })
@@ -210,9 +209,8 @@ describe('game.store', () => {
   })
 
   it('should find out that player 1 is not a winner because pawn got captured', () => {
-    const { putPawn, state, lockPawns } = useGameStore()
-    lockPawns('1', { small: 3, medium: 3, big: 3 })
-    lockPawns('2', { small: 3, medium: 3, big: 3 })
+    const { putPawn, state } = useGameStore()
+    setupGame()
 
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 0 })
@@ -225,18 +223,20 @@ describe('game.store', () => {
   })
 
   it('should allow reuse of pawns captured by their owner', () => {
-    const { putPawn, state, lockPawns } = useGameStore()
-    lockPawns('1', { small: 3, medium: 3, big: 3 })
-    lockPawns('2', { small: 3, medium: 3, big: 3 })
+    const { putPawn } = useGameStore()
+    const spy = vi.spyOn(usePlayersStore(), 'manipulatePawnAmount')
+    setupGame()
 
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 1 })
-    expect(state.players['1'].pawns.small).toBe(1)
+
+    vi.clearAllMocks()
 
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
-    expect(state.players['1'].pawns.small).toBe(2)
+    expect(spy).toHaveBeenCalledTimes(2)
+    expect(spy).toHaveBeenNthCalledWith(1, '1', 'small', 1)
   })
 
   it('should find out that player 1 captured line first so he is a winner', () => {
@@ -254,6 +254,21 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 1 })
 
     expect(state.winner).toBe('1')
+  })
+
+  it('should allow medium pawns after 4 turns', () => {
+    const { putPawn, state } = useGameStore()
+    setupGame()
+
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 1 })
+    putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 1 })
+
+    expect(state.board[1][1].pawn).toBeNull()
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
+    putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 2 })
+    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
+    expect(state.board[0][0].pawn).toEqual({ size: 'medium', playerId: '1' })
   })
 
   it('should finish the game instantly when player captured 5 enemy pawns', () => {

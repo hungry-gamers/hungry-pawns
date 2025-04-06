@@ -2,24 +2,29 @@
 import TheGame from '@/components/TheGame/TheGame.vue'
 import { useGameStore } from '@/featuers/game/store/game.ts'
 import { computed, onMounted, ref, watch } from 'vue'
-import * as GameT from '@/featuers/game/store/types.ts'
+import * as GameT from '@/featuers/game/types.ts'
 import { players } from '@/utils/mocks/game.ts'
 import PlayerPawnPicker from '@/components/PlayerPawnPicker/PlayerPawnPicker.vue'
+import { usePlayersStore } from '@/featuers/players/store/players.ts'
 
-const { initiateGame, getPlayers, state } = useGameStore()
+const { initiateGame, state: gameState } = useGameStore()
+const { getPlayers, state } = usePlayersStore()
 const move = ref<GameT.Move>({ size: 'small', mode: 'pawn' })
 
-const gameStatus = computed(() => state.status)
+const gameStatus = computed(() => gameState.status)
 const playersIds = computed(getPlayers)
-const currentPlayerId = computed(() => state.currentPlayerId)
+const currentPlayerId = computed(() => gameState.currentPlayerId)
 const areSmallPawnsAllowed = computed(() => state.players[currentPlayerId.value]?.pawns.small > 0)
 const areMediumPawnsAllowed = computed(() => {
   return (
-    state.players[currentPlayerId.value]?.pawns.medium > 0 && state.allowedPawns.includes('medium')
+    state.players[currentPlayerId.value]?.pawns.medium > 0 &&
+    gameState.allowedPawns.includes('medium')
   )
 })
 const areBigPawnsAllowed = computed(() => {
-  return state.players[currentPlayerId.value]?.pawns.big > 0 && state.allowedPawns.includes('big')
+  return (
+    state.players[currentPlayerId.value]?.pawns.big > 0 && gameState.allowedPawns.includes('big')
+  )
 })
 
 const selectPawnSize = (size: GameT.PawnSize) => {
