@@ -5,9 +5,11 @@ export interface Pawn {
   playerId: string
 }
 
+export type MoveName = 'shield' | 'drop' | 'pawn'
+
 export type Move = {
   size: PawnSize
-  mode: 'pawn' | 'shield'
+  mode: MoveName
 }
 
 export type Location = { rowIndex: number; columnIndex: number }
@@ -15,8 +17,6 @@ export type Location = { rowIndex: number; columnIndex: number }
 export type ApplyShieldPayload = Location
 
 export type DropOpponentPawnPayload = Location
-
-export type SpecialMoveName = 'shield' | 'drop'
 
 export type Sequence = `${string}/${number}-${number}/${number}-${number}/${number}-${number}`
 

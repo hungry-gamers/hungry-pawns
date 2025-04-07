@@ -266,6 +266,18 @@ describe('game.store', () => {
     expect(spy).toHaveBeenCalledWith('2', 'drop')
   })
 
+  it('should prevent from dropping your own pawn', () => {
+    const { putPawn, dropOpponentPawn, state } = useGameStore()
+    setupGame()
+    const spy = vi.spyOn(usePlayersStore(), 'useSpecialMove')
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
+    dropOpponentPawn({ rowIndex: 0, columnIndex: 0 })
+
+    expect(state.board[0][0].pawn).toEqual({ size: 'small', playerId: '1' })
+    expect(spy).toHaveBeenCalledTimes(0)
+  })
+
   it('should finish the game instantly when player captured 5 enemy pawns', () => {
     const { putPawn, state, lockPawns } = useGameStore()
     lockPawns('1', { small: 6, medium: 3, big: 0 })

@@ -103,7 +103,7 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
-  const isMoveAllowed = (payload: GameT.PutPawnPayload) => {
+  const isPutPawnAllowed = (payload: GameT.PutPawnPayload) => {
     const { rowIndex, columnIndex, pawnSize } = payload
     const isProtected = state.board[rowIndex][columnIndex].shield.activeInTurn === getCurrentTurn()
     const isPawnAvailable = playersStore.isPawnAvailableForPlayer(state.currentPlayerId, pawnSize)
@@ -112,14 +112,19 @@ export const useGameStore = defineStore('game', () => {
     return isPawnAvailable && isPawnSizeAllowed && !isProtected
   }
 
-  const dropOpponentPawn = (payload: GameT.MovePayload) => {
-    if (playersStore.useSpecialMove(state.currentPlayerId, 'drop') === 'not-allowed') return
+  const isDropPawnAllowed = (payload: GameT.DropOpponentPawnPayload) => {
     const { rowIndex, columnIndex } = payload
     const isProtected = state.board[rowIndex][columnIndex].shield.activeInTurn === getCurrentTurn()
     const isPlayerPawn = state.board[rowIndex][columnIndex].pawn?.playerId === state.currentPlayerId
 
-    if (isProtected || isPlayerPawn) return
+    return isProtected || isPlayerPawn
+  }
 
+  const dropOpponentPawn = (payload: GameT.MovePayload) => {
+    if (isDropPawnAllowed(payload)) return
+    if (playersStore.useSpecialMove(state.currentPlayerId, 'drop') === 'not-allowed') return
+
+    const { rowIndex, columnIndex } = payload
     state.board[rowIndex][columnIndex].pawn = null
 
     checkWinner(payload)
@@ -129,7 +134,7 @@ export const useGameStore = defineStore('game', () => {
     const { rowIndex, columnIndex, pawnSize } = payload
     const cellPawn = state.board[rowIndex][columnIndex].pawn
 
-    if (!isMoveAllowed(payload) || state.status !== 'in-progress') return
+    if (!isPutPawnAllowed(payload) || state.status !== 'in-progress') return
 
     if (cellPawn) {
       if (!GameService.isPawnBigger(pawnSize, cellPawn.size)) return

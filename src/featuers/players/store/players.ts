@@ -59,9 +59,9 @@ export const usePlayersStore = defineStore('players', () => {
 
   const useSpecialMove = (
     playerId: string,
-    moveName: GameT.SpecialMoveName,
+    moveName: GameT.MoveName,
   ): PlayersT.SpecialMoveStatus => {
-    if (!state.players[playerId].specialMoves.includes('shield')) return 'not-allowed'
+    if (!state.players[playerId].specialMoves.includes(moveName)) return 'not-allowed'
     state.players[playerId].specialMoves = state.players[playerId].specialMoves.filter(
       (move) => move !== moveName,
     )

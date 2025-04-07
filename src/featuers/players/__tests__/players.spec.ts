@@ -11,7 +11,7 @@ const player = {
   },
   capturedPawnsCounter: 0,
   arePawnsLocked: false,
-  specialMoves: ['shield'],
+  specialMoves: ['shield', 'drop'],
 }
 
 describe('players.store', () => {

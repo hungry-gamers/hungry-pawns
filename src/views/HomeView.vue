@@ -36,6 +36,10 @@ const activateShieldMode = () => {
   move.value.mode = 'shield'
 }
 
+const activateDropMode = () => {
+  move.value.mode = 'drop'
+}
+
 onMounted(() => initiateGame(players))
 
 watch(
@@ -64,6 +68,7 @@ watch(
         <button @click="selectPawnSize('big')" :disabled="!areBigPawnsAllowed">Big</button>
 
         <button @click="activateShieldMode">Shield</button>
+        <button @click="activateDropMode">Drop</button>
       </div>
 
       <TheGame :move="move" />

@@ -1,5 +1,5 @@
 import * as GameT from '@/featuers/game/types.ts'
-import type { Sequence } from '@/featuers/game/types.ts'
+import type { Move, Sequence } from '@/featuers/game/types.ts'
 
 enum PawnSizeValue {
   small = 1,
@@ -50,3 +50,5 @@ export const findWinningLine = (board: GameT.Board): Sequence[] => {
 
 export const UNLOCK_MEDIUM_PAWNS_TURN = 4
 export const UNLOCK_BIG_PAWNS_TURN = 10
+
+export type MoveHandler = (args: { move: Move; rowIndex: number; columnIndex: number }) => void
