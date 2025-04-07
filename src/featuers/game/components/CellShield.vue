@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useGameStore } from '@/featuers/game/store/game.ts'
+import { usePlayersStore } from '@/featuers/players/store/players.ts'
 
-const { getPlayers } = useGameStore()
+const { getPlayers } = usePlayersStore()
 
 defineProps<{ ownerId: string }>()
 

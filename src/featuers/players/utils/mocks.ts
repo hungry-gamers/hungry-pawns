@@ -1,4 +1,4 @@
-import type { PlayerPayload } from '@/featuers/game/types.ts'
+import type { PlayerPayload } from '@/featuers/players/types.ts'
 
 export const players: PlayerPayload[] = [
   { id: '1', pawns: { small: 3, medium: 3, big: 3 } },

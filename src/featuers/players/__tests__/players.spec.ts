@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { usePlayersStore } from '@/featuers/players/store/players.ts'
-import { players } from '@/utils/mocks/game.ts'
+import { players } from '@/featuers/players/utils/mocks.ts'
 
 const player = {
   pawns: {
@@ -11,7 +11,7 @@ const player = {
   },
   capturedPawnsCounter: 0,
   arePawnsLocked: false,
-  specialMoves: ['shield'],
+  specialMoves: ['shield', 'drop'],
 }
 
 describe('players.store', () => {

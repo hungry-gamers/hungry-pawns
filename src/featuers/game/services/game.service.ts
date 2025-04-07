@@ -1,17 +1,14 @@
 import * as GameT from '@/featuers/game/types.ts'
-import * as PlayersT from '@/featuers/players/types.ts'
-import type { Sequence } from '@/featuers/game/types.ts'
+import type { Move, Sequence } from '@/featuers/game/types.ts'
 
-export const createPlayer = (player: PlayersT.PlayerPayload): PlayersT.Player => ({
-  pawns: { ...player.pawns },
-  capturedPawnsCounter: 0,
-  arePawnsLocked: false,
-  specialMoves: ['shield'],
-})
+enum PawnSizeValue {
+  small = 1,
+  medium = 2,
+  big = 3,
+}
 
 export const isPawnBigger = (size: GameT.PawnSize, pawnOnBoardSize: GameT.PawnSize) => {
-  const order: GameT.PawnSize[] = ['small', 'medium', 'big']
-  return order.indexOf(size) > order.indexOf(pawnOnBoardSize)
+  return PawnSizeValue[size] > PawnSizeValue[pawnOnBoardSize]
 }
 
 export const createCell = (pawn?: GameT.Pawn): GameT.Cell => ({
@@ -50,3 +47,8 @@ export const findWinningLine = (board: GameT.Board): Sequence[] => {
 
   return line
 }
+
+export const UNLOCK_MEDIUM_PAWNS_TURN = 4
+export const UNLOCK_BIG_PAWNS_TURN = 10
+
+export type MoveHandler = (args: { move: Move; rowIndex: number; columnIndex: number }) => void
