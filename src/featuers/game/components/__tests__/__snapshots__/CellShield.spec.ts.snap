@@ -1,0 +1,9 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CellShield > should match snapshot for small 1`] = `
+"<svg data-v-d3cbbe16="" class="shield-icon player-1-text" width="120" height="140" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+  <path data-v-d3cbbe16="" class="shield-base" d="M50 5 L90 25 V55 C90 85 70 105 50 115 C30 105 10 85 10 55 V25 Z"></path>
+  <path data-v-d3cbbe16="" class="shield-gloss" d="M50 5 L90 25 V55 C90 75 70 95 50 105 C30 95 10 75 10 55 V25 Z"></path>
+  <path data-v-d3cbbe16="" class="shield-highlight" d="M15 30 Q50 0 85 30"></path>
+</svg>"
+`;

@@ -35,6 +35,40 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  const getLastTurn = () => {
+    return Math.max(...Object.keys(state.turns).map(Number), 0)
+  }
+
+  const getCurrentTurn = () => {
+    return getLastTurn() + 1
+  }
+
+  const manageAllowedPawns = () => {
+    const lastTurn = getLastTurn()
+    const isMidTurn =
+      state.allowedPawns.length === 2 && lastTurn < GameService.UNLOCK_BIG_PAWNS_TURN
+
+    if (
+      lastTurn < GameService.UNLOCK_MEDIUM_PAWNS_TURN ||
+      isMidTurn ||
+      lastTurn > GameService.UNLOCK_BIG_PAWNS_TURN
+    ) {
+      return
+    }
+
+    if (lastTurn === GameService.UNLOCK_MEDIUM_PAWNS_TURN) state.allowedPawns.push('medium')
+    if (lastTurn === GameService.UNLOCK_BIG_PAWNS_TURN) state.allowedPawns.push('big')
+  }
+
+  const nextTurn = (payload: GameT.PutPawnPayload | GameT.ApplyShieldPayload) => {
+    state.turns[getLastTurn() + 1] = { playerId: state.currentPlayerId, move: payload }
+    state.currentPlayerId = playersStore
+      .getPlayers()
+      .find((player) => player !== state.currentPlayerId)!
+
+    manageAllowedPawns()
+  }
+
   const checkInstantWin = () => {
     const CAPTURED_PAWNS_FOR_INSTANT_WIN = 5
     const capturedCounter = playersStore.getCapturedPawnsCounter(state.currentPlayerId)
@@ -59,24 +93,7 @@ export const useGameStore = defineStore('game', () => {
     return undefined
   }
 
-  const getLastTurn = () => {
-    return Math.max(...Object.keys(state.turns).map(Number), 0)
-  }
-
-  const getCurrentTurn = () => {
-    return getLastTurn() + 1
-  }
-
-  const nextTurn = (payload: GameT.PutPawnPayload | GameT.ApplyShieldPayload) => {
-    state.turns[getLastTurn() + 1] = { playerId: state.currentPlayerId, move: payload }
-    state.currentPlayerId = playersStore
-      .getPlayers()
-      .find((player) => player !== state.currentPlayerId)!
-
-    manageAllowedPawns()
-  }
-
-  const checkWinner = (payload: GameT.ApplyShieldPayload | GameT.PutPawnPayload) => {
+  const checkWinner = (payload: GameT.MovePayload) => {
     const isInstantWin = checkInstantWin()
     state.winner = isInstantWin ? state.currentPlayerId : isLineCaptureWin()
 
@@ -86,17 +103,48 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
-  const manageAllowedPawns = () => {
-    const unlockThresholds = [4, 10]
-    const pawnSizes: GameT.PawnSize[] = ['medium', 'big']
-    const nextUnlockIndex = state.allowedPawns.length - 1
+  const isMoveAllowed = (payload: GameT.PutPawnPayload) => {
+    const { rowIndex, columnIndex, pawnSize } = payload
+    const isProtected = state.board[rowIndex][columnIndex].shield.activeInTurn === getCurrentTurn()
+    const isPawnAvailable = playersStore.isPawnAvailableForPlayer(state.currentPlayerId, pawnSize)
+    const isPawnSizeAllowed = state.allowedPawns.includes(pawnSize)
 
-    if (
-      nextUnlockIndex < unlockThresholds.length &&
-      getLastTurn() >= unlockThresholds[nextUnlockIndex]
-    ) {
-      state.allowedPawns.push(pawnSizes[nextUnlockIndex])
+    return isPawnAvailable && isPawnSizeAllowed && !isProtected
+  }
+
+  const dropOpponentPawn = (payload: GameT.MovePayload) => {
+    if (playersStore.useSpecialMove(state.currentPlayerId, 'drop') === 'not-allowed') return
+    const { rowIndex, columnIndex } = payload
+    const isProtected = state.board[rowIndex][columnIndex].shield.activeInTurn === getCurrentTurn()
+    const isPlayerPawn = state.board[rowIndex][columnIndex].pawn?.playerId === state.currentPlayerId
+
+    if (isProtected || isPlayerPawn) return
+
+    state.board[rowIndex][columnIndex].pawn = null
+
+    checkWinner(payload)
+  }
+
+  const putPawn = (payload: GameT.PutPawnPayload) => {
+    const { rowIndex, columnIndex, pawnSize } = payload
+    const cellPawn = state.board[rowIndex][columnIndex].pawn
+
+    if (!isMoveAllowed(payload) || state.status !== 'in-progress') return
+
+    if (cellPawn) {
+      if (!GameService.isPawnBigger(pawnSize, cellPawn.size)) return
+      if (cellPawn.playerId !== state.currentPlayerId) {
+        playersStore.updatePlayerCapturedPawns(state.currentPlayerId)
+      }
     }
+
+    state.board[rowIndex][columnIndex].pawn = {
+      size: pawnSize,
+      playerId: state.currentPlayerId,
+    }
+    playersStore.manipulatePawnAmount(state.currentPlayerId, pawnSize, -1)
+
+    checkWinner(payload)
   }
 
   const applyShield = (payload: GameT.ApplyShieldPayload) => {
@@ -109,35 +157,6 @@ export const useGameStore = defineStore('game', () => {
     checkWinner(payload)
   }
 
-  const putPawn = (payload: GameT.PutPawnPayload) => {
-    const { rowIndex, columnIndex, pawnSize } = payload
-    const cellPawn = state.board[rowIndex][columnIndex].pawn
-    const isProtected = state.board[rowIndex][columnIndex].shield.activeInTurn === getCurrentTurn()
-    const moveNotAllowed =
-      !playersStore.isPawnAvailableForPlayer(state.currentPlayerId, payload.pawnSize) ||
-      !state.allowedPawns.includes(payload.pawnSize) ||
-      isProtected
-
-    if (moveNotAllowed || state.status !== 'in-progress') return
-
-    if (cellPawn) {
-      if (!GameService.isPawnBigger(pawnSize, cellPawn.size)) return
-      if (cellPawn.playerId !== state.currentPlayerId) {
-        playersStore.updatePlayerCapturedPawns(state.currentPlayerId)
-      }
-
-      playersStore.manipulatePawnAmount(state.currentPlayerId, cellPawn.size, 1)
-    }
-
-    state.board[rowIndex][columnIndex].pawn = {
-      size: pawnSize,
-      playerId: state.currentPlayerId,
-    }
-    playersStore.manipulatePawnAmount(state.currentPlayerId, pawnSize, -1)
-
-    checkWinner(payload)
-  }
-
   return {
     state,
     initiateGame,
@@ -146,5 +165,6 @@ export const useGameStore = defineStore('game', () => {
     applyShield,
     getCurrentTurn,
     isLineCaptureWin,
+    dropOpponentPawn,
   }
 })

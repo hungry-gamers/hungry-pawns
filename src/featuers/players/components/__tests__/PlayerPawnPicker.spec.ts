@@ -3,7 +3,7 @@ import PlayerPawnPicker from '../PlayerPawnPicker.vue'
 import { mount } from '@vue/test-utils'
 import { createTestingPinia } from '@pinia/testing'
 import { useGameStore } from '@/featuers/game/store/game.ts'
-import { players } from '@/utils/mocks/game.ts'
+import { players } from '@/featuers/players/utils/mocks.ts'
 
 describe('PlayerPawnPicker', () => {
   const pinia = createTestingPinia({

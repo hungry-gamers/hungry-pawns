@@ -2,8 +2,8 @@
 import { useGameStore } from '@/featuers/game/store/game.ts'
 import type { Move } from '@/featuers/game/types.ts'
 import { computed } from 'vue'
-import Shield from '@/featuers/components/Shield.vue'
-import ThePawn from '@/featuers/components/ThePawn.vue'
+import CellShield from '@/featuers/game/components/CellShield.vue'
+import ThePawn from '@/featuers/game/components/ThePawn.vue'
 import { usePlayersStore } from '@/featuers/players/store/players.ts'
 
 const props = defineProps<{ move: Move }>()
@@ -40,7 +40,7 @@ const onCellClick = (rowIndex: number, columnIndex: number) => {
         }"
         @click="onCellClick(rowIndex, colIndex)"
       >
-        <Shield
+        <CellShield
           v-if="cell.shield.activeInTurn === getCurrentTurn()"
           :owner-id="cell.shield.appliedBy"
         />

@@ -1,0 +1,25 @@
+import { describe, expect, it } from 'vitest'
+import * as GameService from '../game.service.ts'
+import { boardColumnWin, boardDiagonalWin, boardRowWin } from '@/featuers/game/utils/mocks.ts'
+
+describe('game.service', () => {
+  it('should find out which pawn is bigger', () => {
+    expect(GameService.isPawnBigger('small', 'medium')).toBe(false)
+    expect(GameService.isPawnBigger('medium', 'small')).toBe(true)
+    expect(GameService.isPawnBigger('big', 'medium')).toBe(true)
+    expect(GameService.isPawnBigger('big', 'small')).toBe(true)
+  })
+
+  it('should create the cell', () => {
+    expect(GameService.createCell()).toEqual({
+      shield: { activeInTurn: -1, appliedBy: '' },
+      pawn: null,
+    })
+  })
+
+  it('should create winning sequence', () => {
+    expect(GameService.findWinningLine(boardRowWin)).toEqual([`1/0-0/0-1/0-2`])
+    expect(GameService.findWinningLine(boardColumnWin)).toEqual([`1/0-2/1-2/2-2`])
+    expect(GameService.findWinningLine(boardDiagonalWin)).toEqual([`1/0-0/1-1/2-2`])
+  })
+})

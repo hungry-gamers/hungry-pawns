@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import ThePawn from '@/featuers/components/ThePawn.vue'
+import ThePawn from '@/featuers/game/components/ThePawn.vue'
 
-describe('The Pawn', () => {
+describe('ThePawn', () => {
   it('should match snapshot for small', () => {
     const wrapper = mount(ThePawn, {
       props: { size: 'small', color: 'red' },

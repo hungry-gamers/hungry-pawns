@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useGameStore } from '../store/game.ts'
-import { players } from '@/utils/mocks/game.ts'
+import { useGameStore } from '../game.ts'
+import { players } from '@/featuers/players/utils/mocks.ts'
 import { usePlayersStore } from '@/featuers/players/store/players.ts'
 
 describe('game.store', () => {
@@ -139,14 +139,14 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 1 })
 
     expect(spy).toHaveBeenCalledTimes(1)
-    expect(manipulateSpy).toHaveBeenCalledTimes(2)
+    expect(manipulateSpy).toHaveBeenCalledTimes(1)
     expect(spy).toHaveBeenCalledWith('1')
     expect(manipulateSpy).toHaveBeenCalledWith('1', 'medium', -1)
 
     vi.clearAllMocks()
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
     expect(spy).toHaveBeenCalledTimes(1)
-    expect(manipulateSpy).toHaveBeenCalledTimes(2)
+    expect(manipulateSpy).toHaveBeenCalledTimes(1)
     expect(spy).toHaveBeenCalledWith('2')
     expect(manipulateSpy).toHaveBeenCalledWith('2', 'medium', -1)
   })
@@ -222,23 +222,6 @@ describe('game.store', () => {
     expect(state.winner).toBeUndefined()
   })
 
-  it('should allow reuse of pawns captured by their owner', () => {
-    const { putPawn } = useGameStore()
-    const spy = vi.spyOn(usePlayersStore(), 'manipulatePawnAmount')
-    setupGame()
-
-    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
-    putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 0 })
-    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
-    putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 1 })
-
-    vi.clearAllMocks()
-
-    putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
-    expect(spy).toHaveBeenCalledTimes(2)
-    expect(spy).toHaveBeenNthCalledWith(1, '1', 'small', 1)
-  })
-
   it('should find out that player 1 captured line first so he is a winner', () => {
     const { putPawn, state, lockPawns } = useGameStore()
     lockPawns('1', { small: 6, medium: 3, big: 0 })
@@ -269,6 +252,18 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 2 })
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 0 })
     expect(state.board[0][0].pawn).toEqual({ size: 'medium', playerId: '1' })
+  })
+
+  it('should drop opponent pawn', () => {
+    const { putPawn, dropOpponentPawn, state } = useGameStore()
+    setupGame()
+    const spy = vi.spyOn(usePlayersStore(), 'useSpecialMove')
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
+    dropOpponentPawn({ rowIndex: 0, columnIndex: 0 })
+
+    expect(state.board[0][0].pawn).toBeNull()
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy).toHaveBeenCalledWith('2', 'drop')
   })
 
   it('should finish the game instantly when player captured 5 enemy pawns', () => {

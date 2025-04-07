@@ -14,7 +14,9 @@ export type Location = { rowIndex: number; columnIndex: number }
 
 export type ApplyShieldPayload = Location
 
-export type SpecialMoveName = 'shield'
+export type DropOpponentPawnPayload = Location
+
+export type SpecialMoveName = 'shield' | 'drop'
 
 export type Sequence = `${string}/${number}-${number}/${number}-${number}/${number}-${number}`
 
@@ -23,11 +25,13 @@ export type Board = Cell[][]
 
 export type PutPawnPayload = { pawnSize: PawnSize } & Location
 
+export type MovePayload = PutPawnPayload | ApplyShieldPayload | DropOpponentPawnPayload
+
 export type Game = {
   status: 'not-initialized' | 'pregame' | 'in-progress' | 'finished'
   board: Board
   currentPlayerId: string
-  turns: Record<number, { playerId: string; move: PutPawnPayload | ApplyShieldPayload }>
+  turns: Record<number, { playerId: string; move: MovePayload }>
   winner: string | undefined
   allowedPawns: PawnSize[]
   sequences: Sequence[]

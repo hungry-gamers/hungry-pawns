@@ -6,3 +6,5 @@ export const createPlayer = (player: PlayersT.PlayerPayload): PlayersT.Player =>
   arePawnsLocked: false,
   specialMoves: ['shield'],
 })
+
+export const MAXIMUM_PAWNS_PER_PLAYER = 9

@@ -1,1 +1,0 @@
-export const MAXIMUM_PAWNS_PER_PLAYER = 9
