@@ -5,6 +5,7 @@ export type Player = {
   capturedPawnsCounter: number
   arePawnsLocked: boolean
   specialMoves: MoveName[]
+  skippedTurnsCount: number
 }
 
 export type PlayerPayload = { id: string; pawns: Player['pawns'] }

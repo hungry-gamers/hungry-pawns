@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useGameStore } from '../game.ts'
-import { players } from '@/featuers/players/utils/mocks.ts'
-import { usePlayersStore } from '@/featuers/players/store/players.ts'
+import { useGameStore } from '../game'
+import { players } from '@/featuers/players/utils/mocks'
+import { usePlayersStore } from '@/featuers/players/store/players'
 
 describe('game.store', () => {
   beforeEach(() => {
@@ -41,6 +41,34 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
 
     expect(state.board[0][0].pawn).toBeNull()
+  })
+
+  it('should apply penalties for skipping turns', () => {
+    const { skipTurn, putPawn } = useGameStore()
+    const spy = vi.spyOn(usePlayersStore(), 'addSpecialMove')
+    const manipulateSpy = vi.spyOn(usePlayersStore(), 'manipulatePawnAmount')
+
+    setupGame()
+
+    skipTurn()
+    expect(manipulateSpy).toHaveBeenLastCalledWith('2', 'small', 1)
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 0 })
+    skipTurn()
+    expect(manipulateSpy).toHaveBeenLastCalledWith('2', 'medium', 1)
+    putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 1 })
+    skipTurn()
+    expect(manipulateSpy).toHaveBeenLastCalledWith('2', 'big', 1)
+    putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 1 })
+    skipTurn()
+    expect(spy).toHaveBeenLastCalledWith('2', 'shield')
+
+    putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 2 })
+    skipTurn()
+    expect(spy).toHaveBeenLastCalledWith('2', 'drop')
+
+    putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 0 })
+    skipTurn()
+    expect(spy).toHaveBeenLastCalledWith('2', 'drop')
   })
 
   it('should put pawn in empty cell and switch turn', () => {
@@ -160,7 +188,6 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 0, columnIndex: 1 })
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 2 })
-
     putPawn({ pawnSize: 'medium', rowIndex: 1, columnIndex: 2 })
     expect(state.winner).toBe('1')
   })
@@ -174,7 +201,6 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 0 })
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
     putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 0 })
-
     putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 1 })
     expect(state.winner).toBe('1')
   })
@@ -188,7 +214,6 @@ describe('game.store', () => {
     putPawn({ pawnSize: 'small', rowIndex: 1, columnIndex: 1 })
     putPawn({ pawnSize: 'small', rowIndex: 2, columnIndex: 1 })
     putPawn({ pawnSize: 'medium', rowIndex: 2, columnIndex: 2 })
-
     putPawn({ pawnSize: 'medium', rowIndex: 0, columnIndex: 2 })
     expect(state.winner).toBe('1')
   })

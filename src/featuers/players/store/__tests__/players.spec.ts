@@ -12,6 +12,7 @@ const player = {
   capturedPawnsCounter: 0,
   arePawnsLocked: false,
   specialMoves: ['shield', 'drop'],
+  skippedTurnsCount: 0,
 }
 
 describe('players.store', () => {
@@ -49,10 +50,24 @@ describe('players.store', () => {
     expect(resultPlayer2).toBe(true)
   })
 
+  it('should increase captured pawns counter', () => {
+    const { state, updatePlayerCapturedPawns } = usePlayersStore()
+
+    updatePlayerCapturedPawns('1')
+    expect(state.players['1'].capturedPawnsCounter).toBe(1)
+  })
+
   it('should return players ids', () => {
     const { getPlayers } = usePlayersStore()
 
     expect(getPlayers()).toEqual(['1', '2'])
+  })
+
+  it('should add selected special move', () => {
+    const { state, addSpecialMove } = usePlayersStore()
+    addSpecialMove('1', 'drop')
+
+    expect(state.players['1'].specialMoves.filter((move) => move === 'drop')).toHaveLength(2)
   })
 
   it('should increase/decrease pawns amount depends on value', () => {
