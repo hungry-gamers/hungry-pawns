@@ -60,8 +60,8 @@ export const useGameStore = defineStore('game', () => {
     if (lastTurn === GameService.UNLOCK_BIG_PAWNS_TURN) state.allowedPawns.push('big')
   }
 
-  const nextTurn = (payload: GameT.PutPawnPayload | GameT.ApplyShieldPayload) => {
-    state.turns[getLastTurn() + 1] = { playerId: state.currentPlayerId, move: payload }
+  const nextTurn = (payload?: GameT.PutPawnPayload | GameT.ApplyShieldPayload) => {
+    state.turns[getLastTurn() + 1] = { playerId: state.currentPlayerId, move: payload || 'skip' }
     state.currentPlayerId = playersStore
       .getPlayers()
       .find((player) => player !== state.currentPlayerId)!
@@ -93,6 +93,23 @@ export const useGameStore = defineStore('game', () => {
     return undefined
   }
 
+  const skipTurn = () => {
+    const result = playersStore.updateSkippedTurnsCount(state.currentPlayerId)
+    const opponentId = playersStore.getOpponentId(state.currentPlayerId)
+
+    const penalties: Record<number, () => void> = {
+      1: () => playersStore.manipulatePawnAmount(opponentId, 'small', 1),
+      2: () => playersStore.manipulatePawnAmount(opponentId, 'medium', 1),
+      3: () => playersStore.manipulatePawnAmount(opponentId, 'big', 1),
+      4: () => playersStore.addSpecialMove(opponentId, 'shield'),
+      5: () => playersStore.addSpecialMove(opponentId, 'drop'),
+    }
+
+    penalties[result]()
+
+    nextTurn()
+  }
+
   const checkWinner = (payload: GameT.MovePayload) => {
     const isInstantWin = checkInstantWin()
     state.winner = isInstantWin ? state.currentPlayerId : isLineCaptureWin()
@@ -103,21 +120,23 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  const isCellProtected = ({ rowIndex, columnIndex }: GameT.Location) => {
+    return state.board[rowIndex][columnIndex].shield.activeInTurn === getCurrentTurn()
+  }
+
   const isPutPawnAllowed = (payload: GameT.PutPawnPayload) => {
     const { rowIndex, columnIndex, pawnSize } = payload
-    const isProtected = state.board[rowIndex][columnIndex].shield.activeInTurn === getCurrentTurn()
     const isPawnAvailable = playersStore.isPawnAvailableForPlayer(state.currentPlayerId, pawnSize)
     const isPawnSizeAllowed = state.allowedPawns.includes(pawnSize)
 
-    return isPawnAvailable && isPawnSizeAllowed && !isProtected
+    return isPawnAvailable && isPawnSizeAllowed && !isCellProtected({ rowIndex, columnIndex })
   }
 
   const isDropPawnAllowed = (payload: GameT.DropOpponentPawnPayload) => {
     const { rowIndex, columnIndex } = payload
-    const isProtected = state.board[rowIndex][columnIndex].shield.activeInTurn === getCurrentTurn()
     const isPlayerPawn = state.board[rowIndex][columnIndex].pawn?.playerId === state.currentPlayerId
 
-    return isProtected || isPlayerPawn
+    return isCellProtected({ rowIndex, columnIndex }) || isPlayerPawn
   }
 
   const dropOpponentPawn = (payload: GameT.MovePayload) => {
@@ -171,5 +190,6 @@ export const useGameStore = defineStore('game', () => {
     getCurrentTurn,
     isLineCaptureWin,
     dropOpponentPawn,
+    skipTurn,
   }
 })

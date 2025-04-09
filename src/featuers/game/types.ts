@@ -31,7 +31,7 @@ export type Game = {
   status: 'not-initialized' | 'pregame' | 'in-progress' | 'finished'
   board: Board
   currentPlayerId: string
-  turns: Record<number, { playerId: string; move: MovePayload }>
+  turns: Record<number, { playerId: string; move: MovePayload | 'skip' }>
   winner: string | undefined
   allowedPawns: PawnSize[]
   sequences: Sequence[]

@@ -7,7 +7,7 @@ import { players } from '@/featuers/players/utils/mocks.ts'
 import PlayerPawnPicker from '@/featuers/players/components/PlayerPawnPicker.vue'
 import { usePlayersStore } from '@/featuers/players/store/players.ts'
 
-const { initiateGame, state: gameState } = useGameStore()
+const { initiateGame, skipTurn, state: gameState } = useGameStore()
 const { getPlayers, state } = usePlayersStore()
 const move = ref<GameT.Move>({ size: 'small', mode: 'pawn' })
 
@@ -67,6 +67,7 @@ watch(
         <button @click="selectPawnSize('medium')" :disabled="!areMediumPawnsAllowed">Medium</button>
         <button @click="selectPawnSize('big')" :disabled="!areBigPawnsAllowed">Big</button>
 
+        <button @click="skipTurn">Skip turn</button>
         <button @click="activateShieldMode">Shield</button>
         <button @click="activateDropMode">Drop</button>
       </div>
