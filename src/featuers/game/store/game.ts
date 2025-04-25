@@ -46,17 +46,13 @@ export const useGameStore = defineStore('game', () => {
 
   const manageAllowedPawns = () => {
     const lastTurn = getLastTurn()
-    const isMidTurn =
-      state.allowedPawns.length === 2 && lastTurn < GameService.UNLOCK_BIG_PAWNS_TURN
+    const rejectConditions = [
+      lastTurn < GameService.UNLOCK_MEDIUM_PAWNS_TURN,
+      state.allowedPawns.length === 2 && lastTurn < GameService.UNLOCK_BIG_PAWNS_TURN,
+      lastTurn > GameService.UNLOCK_BIG_PAWNS_TURN,
+    ]
 
-    if (
-      lastTurn < GameService.UNLOCK_MEDIUM_PAWNS_TURN ||
-      isMidTurn ||
-      lastTurn > GameService.UNLOCK_BIG_PAWNS_TURN
-    ) {
-      return
-    }
-
+    if (rejectConditions.some(Boolean)) return
     if (lastTurn === GameService.UNLOCK_MEDIUM_PAWNS_TURN) state.allowedPawns.push('medium')
     if (lastTurn === GameService.UNLOCK_BIG_PAWNS_TURN) state.allowedPawns.push('big')
   }
@@ -73,9 +69,9 @@ export const useGameStore = defineStore('game', () => {
 
   const checkInstantWin = () => {
     const CAPTURED_PAWNS_FOR_INSTANT_WIN = 5
-    const capturedCounter = playersStore.getCapturedPawnsCounter(state.currentPlayerId)
+    const player = playersStore.getPlayer(state.currentPlayerId)
 
-    return capturedCounter === CAPTURED_PAWNS_FOR_INSTANT_WIN
+    return player.capturedPawnsCounter === CAPTURED_PAWNS_FOR_INSTANT_WIN
   }
 
   const isLineCaptureWin = (): string | undefined => {
@@ -129,15 +125,16 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const isPutPawnAllowed = (payload: GameT.PutPawnPayload) => {
+    const player = playersStore.getPlayer(state.currentPlayerId)
     const { rowIndex, columnIndex, pawnSize } = payload
-    const isPawnAvailable = playersStore.isPawnAvailableForPlayer(state.currentPlayerId, pawnSize)
+    const isPawnAvailable = player.pawns[payload.pawnSize] > 0
     const isPawnSizeAllowed = state.allowedPawns.includes(pawnSize)
 
     return (
       isPawnAvailable &&
       isPawnSizeAllowed &&
       !isCellProtected({ rowIndex, columnIndex }) &&
-      !playersStore.isPlayerParalyzed(state.currentPlayerId)
+      !playersStore.getPlayer(state.currentPlayerId).paralyzed.isActive
     )
   }
 
@@ -148,7 +145,7 @@ export const useGameStore = defineStore('game', () => {
     return (
       !isCellProtected({ rowIndex, columnIndex }) &&
       !isPlayerPawn &&
-      !playersStore.isPlayerParalyzed(state.currentPlayerId)
+      !playersStore.getPlayer(state.currentPlayerId).paralyzed.isActive
     )
   }
 
@@ -197,7 +194,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const applyShield = (payload: GameT.ApplyShieldPayload) => {
-    if (playersStore.isPlayerParalyzed(state.currentPlayerId)) return
+    if (playersStore.getPlayer(state.currentPlayerId).paralyzed.isActive) return
     if (playersStore.useSpecialMove(state.currentPlayerId, 'shield') === 'not-allowed') return
     const { rowIndex, columnIndex } = payload
 
