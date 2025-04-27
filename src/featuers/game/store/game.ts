@@ -107,10 +107,10 @@ export const useGameStore = defineStore('game', () => {
 
     playersStore.removeParalyzeEffect(state.currentPlayerId)
 
-    nextTurn()
+    checkWinner()
   }
 
-  const checkWinner = (payload: GameT.MovePayload) => {
+  const checkWinner = (payload?: GameT.MovePayload) => {
     const isInstantWin = checkInstantWin()
     state.winner = isInstantWin ? state.currentPlayerId : isLineCaptureWin()
 
@@ -214,5 +214,6 @@ export const useGameStore = defineStore('game', () => {
     isLineCaptureWin,
     dropOpponentPawn,
     skipTurn,
+    checkWinner,
   }
 })

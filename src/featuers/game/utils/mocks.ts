@@ -24,13 +24,11 @@ export const BOARD_DIAGONAL_WIN = [
 ]
 
 export const PARALYZE_OPPONENT_TURNS: PutPawnPayload[] = [
-  { pawnSize: 'small', rowIndex: 0, columnIndex: 0 },
   { pawnSize: 'small', rowIndex: 0, columnIndex: 1 },
-  { pawnSize: 'small', rowIndex: 0, columnIndex: 2 },
-  { pawnSize: 'small', rowIndex: 1, columnIndex: 2 },
-  { pawnSize: 'small', rowIndex: 2, columnIndex: 2 },
-  { pawnSize: 'small', rowIndex: 2, columnIndex: 1 },
+  { pawnSize: 'small', rowIndex: 0, columnIndex: 0 },
   { pawnSize: 'small', rowIndex: 2, columnIndex: 0 },
+  { pawnSize: 'small', rowIndex: 1, columnIndex: 0 },
+  { pawnSize: 'small', rowIndex: 2, columnIndex: 2 },
 ]
 
 export const CAPTURED_PAWNS_WIN_TURNS: PutPawnPayload[] = [

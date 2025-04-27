@@ -296,4 +296,22 @@ describe('game.store', () => {
     expect(spy).toHaveBeenCalledWith('2')
     expect(spyRemoveParalyze).toHaveBeenCalledWith('2')
   })
+
+  it('should search for the winner on skip turn', () => {
+    const { state, skipTurn } = useGameStore()
+    setupGame()
+
+    playTurns([
+      { pawnSize: 'small', rowIndex: 0, columnIndex: 0 },
+      { pawnSize: 'small', rowIndex: 0, columnIndex: 1 },
+      { pawnSize: 'small', rowIndex: 1, columnIndex: 0 },
+      { pawnSize: 'small', rowIndex: 1, columnIndex: 1 },
+      { pawnSize: 'medium', rowIndex: 2, columnIndex: 0 },
+    ])
+
+    skipTurn()
+
+    expect(state.status).toBe('finished')
+    expect(state.winner).toBe('1')
+  })
 })
