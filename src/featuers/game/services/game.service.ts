@@ -1,5 +1,4 @@
 import * as GameT from '@/featuers/game/types.ts'
-import type { Move, Sequence } from '@/featuers/game/types.ts'
 
 enum PawnSizeValue {
   small = 1,
@@ -20,8 +19,18 @@ export const createBoard = () => {
   return Array.from({ length: 3 }, () => Array.from({ length: 3 }, () => createCell()))
 }
 
-export const findWinningLine = (board: GameT.Board): Sequence[] => {
-  const line: Sequence[] = []
+export const getCellsFromSequence = (sequence: GameT.Sequence, board: GameT.Board) => {
+  const parts = sequence.split('/')
+  const cells = parts.slice(1)
+
+  return cells.map((cell) => {
+    const [row, column] = cell.split('-')
+    return board[+row][+column]
+  })
+}
+
+export const findWinningLine = (board: GameT.Board): GameT.Sequence[] => {
+  const line: GameT.Sequence[] = []
 
   const isWinningLine = (line: GameT.Cell[]) => {
     if (line.some((cell) => !cell.pawn)) return false
@@ -51,7 +60,11 @@ export const findWinningLine = (board: GameT.Board): Sequence[] => {
 export const UNLOCK_MEDIUM_PAWNS_TURN = 4
 export const UNLOCK_BIG_PAWNS_TURN = 10
 
-export type MoveHandler = (args: { move: Move; rowIndex: number; columnIndex: number }) => void
+export type MoveHandler = (args: {
+  move: GameT.Move
+  rowIndex: number
+  columnIndex: number
+}) => void
 
 export const SpecialEffectsSequences = {
   paralyze: [

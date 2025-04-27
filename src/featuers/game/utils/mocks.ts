@@ -134,3 +134,19 @@ export const DONT_REPLACE_BIGGER_PAWN_WITH_SMALLER_PAWN_TURNS: PutPawnPayload[] 
   { pawnSize: 'medium', rowIndex: 0, columnIndex: 0 },
   { pawnSize: 'small', rowIndex: 0, columnIndex: 0 },
 ]
+
+export const BALANCE_INSTANT_WIN_TURNS: PutPawnPayload[] = [
+  { pawnSize: 'small', rowIndex: 0, columnIndex: 0 },
+  { pawnSize: 'small', rowIndex: 2, columnIndex: 2 },
+  { pawnSize: 'medium', rowIndex: 0, columnIndex: 1 },
+  { pawnSize: 'small', rowIndex: 1, columnIndex: 1 },
+  { pawnSize: 'big', rowIndex: 0, columnIndex: 2 },
+]
+
+export const BALANCE_INSTANT_WIN_TURNS_REVERSED: PutPawnPayload[] = [
+  { pawnSize: 'big', rowIndex: 0, columnIndex: 0 },
+  { pawnSize: 'small', rowIndex: 2, columnIndex: 2 },
+  { pawnSize: 'medium', rowIndex: 0, columnIndex: 1 },
+  { pawnSize: 'small', rowIndex: 1, columnIndex: 1 },
+  { pawnSize: 'small', rowIndex: 0, columnIndex: 2 },
+]

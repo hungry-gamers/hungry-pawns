@@ -78,6 +78,38 @@ watch(
         <span>How to win</span>
         <div>Capture the line (horizontally, diagonally or vertically) and hold for 1 turn</div>
         <div>Capture 5 opponent pawns for instant win</div>
+        <div>
+          Capture a line using all 3 pawn sizes in order: small, medium, big - it will work in
+          reversed order too (big, medium, small) for instant win
+        </div>
+        <span>Additional mechanics</span>
+        <div>
+          At the beginning of the game you can decide how many pawns of each size you will bring to
+          the table
+        </div>
+        <div>
+          Skipping turn applies penalty to the player who have to skip:
+          <div>1 turn: give opponent small pawn</div>
+          <div>2 turns: give opponent medium pawn</div>
+          <div>3 turns: give opponent big pawn</div>
+          <div>4 turns: give opponent additional shield</div>
+          <div>5 turns: give opponent additional drop power</div>
+        </div>
+        <div>
+          At the beginning of the game you can use only small pawns, medium pawns will be unlocked
+          after 4 turns and big pawns will be unlocked after 10 turns (skipping turn counts as turn)
+        </div>
+        <div>
+          Each player has one shield per game - you can use it to protect any cell from any action
+          for one turn
+        </div>
+        <div>
+          Each player has one "drop" super power - you can drop any opponent pawn from the board
+        </div>
+        <div>
+          Capture middle top cell, bottom left and bottom right to paralyze opponent for one turn.
+          Opponent will be protected from being paralyzed for next 3 turns
+        </div>
       </div>
     </div>
   </div>

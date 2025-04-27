@@ -67,11 +67,31 @@ export const useGameStore = defineStore('game', () => {
     manageAllowedPawns()
   }
 
+  const checkBalanceInstantWin = () => {
+    if (state.sequences.length === 0) return false
+
+    const winningSchema = ['small', 'medium', 'big']
+
+    return state.sequences.some((sequence) => {
+      const cells = GameService.getCellsFromSequence(sequence, state.board)
+      const checkCallback = (cell: GameT.Cell, index: number) => {
+        return cell.pawn?.size === winningSchema[index]
+      }
+
+      if (cells.every(checkCallback)) return true
+
+      winningSchema.reverse()
+      if (cells.every(checkCallback)) return true
+    })
+  }
+
   const checkInstantWin = () => {
     const CAPTURED_PAWNS_FOR_INSTANT_WIN = 5
     const player = playersStore.getPlayer(state.currentPlayerId)
 
-    return player.capturedPawnsCounter === CAPTURED_PAWNS_FOR_INSTANT_WIN
+    return (
+      checkBalanceInstantWin() || player.capturedPawnsCounter === CAPTURED_PAWNS_FOR_INSTANT_WIN
+    )
   }
 
   const isLineCaptureWin = (): string | undefined => {
@@ -111,8 +131,9 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const checkWinner = (payload?: GameT.MovePayload) => {
+    const winner = isLineCaptureWin()
     const isInstantWin = checkInstantWin()
-    state.winner = isInstantWin ? state.currentPlayerId : isLineCaptureWin()
+    state.winner = isInstantWin ? state.currentPlayerId : winner
 
     if (!isInstantWin) nextTurn(payload)
     if (state.currentPlayerId === state.winner) {

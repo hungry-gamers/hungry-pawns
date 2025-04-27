@@ -5,6 +5,8 @@ import { players } from '@/featuers/players/utils/mocks'
 import { usePlayersStore } from '@/featuers/players/store/players'
 import { lockPawns, playTurns } from '@/featuers/game/utils/scenarios.ts'
 import * as Mocks from '@/featuers/game/utils/mocks.ts'
+import { UNLOCK_BIG_PAWNS_TURN } from '@/featuers/game/services/game.service.ts'
+import { BALANCE_INSTANT_WIN_TURNS_REVERSED } from '@/featuers/game/utils/mocks.ts'
 
 describe('game.store', () => {
   beforeEach(() => {
@@ -310,6 +312,34 @@ describe('game.store', () => {
     ])
 
     skipTurn()
+
+    expect(state.status).toBe('finished')
+    expect(state.winner).toBe('1')
+  })
+
+  it('should find instant winner because of balance condition in order', () => {
+    const { state, skipTurn } = useGameStore()
+    setupGame()
+
+    for (let i = 1; i <= UNLOCK_BIG_PAWNS_TURN; i++) {
+      skipTurn()
+    }
+
+    playTurns(Mocks.BALANCE_INSTANT_WIN_TURNS)
+
+    expect(state.status).toBe('finished')
+    expect(state.winner).toBe('1')
+  })
+
+  it('should find instant winner because of balance condition reversed', () => {
+    const { state, skipTurn } = useGameStore()
+    setupGame()
+
+    for (let i = 1; i <= UNLOCK_BIG_PAWNS_TURN; i++) {
+      skipTurn()
+    }
+
+    playTurns(Mocks.BALANCE_INSTANT_WIN_TURNS_REVERSED)
 
     expect(state.status).toBe('finished')
     expect(state.winner).toBe('1')
