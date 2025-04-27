@@ -6,6 +6,10 @@ export type Player = {
   arePawnsLocked: boolean
   specialMoves: MoveName[]
   skippedTurnsCount: number
+  paralyzed: {
+    isActive: boolean
+    protectionExpiresIn: number
+  }
 }
 
 export type PlayerPayload = { id: string; pawns: Player['pawns'] }

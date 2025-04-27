@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import * as GameService from '../game.service.ts'
-import { boardColumnWin, boardDiagonalWin, boardRowWin } from '@/featuers/game/utils/mocks.ts'
+import * as Mocks from '@/featuers/game/utils/mocks.ts'
 
 describe('game.service', () => {
   it('should find out which pawn is bigger', () => {
@@ -18,8 +18,8 @@ describe('game.service', () => {
   })
 
   it('should create winning sequence', () => {
-    expect(GameService.findWinningLine(boardRowWin)).toEqual([`1/0-0/0-1/0-2`])
-    expect(GameService.findWinningLine(boardColumnWin)).toEqual([`1/0-2/1-2/2-2`])
-    expect(GameService.findWinningLine(boardDiagonalWin)).toEqual([`1/0-0/1-1/2-2`])
+    expect(GameService.findWinningLine(Mocks.BOARD_ROW_WIN)).toEqual([`1/0-0/0-1/0-2`])
+    expect(GameService.findWinningLine(Mocks.BOARD_COLUMN_WIN)).toEqual([`1/0-2/1-2/2-2`])
+    expect(GameService.findWinningLine(Mocks.BOARD_DIAGONAL_WIN)).toEqual([`1/0-0/1-1/2-2`])
   })
 })

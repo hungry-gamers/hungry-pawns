@@ -9,6 +9,10 @@ const player = {
     medium: 3,
     small: 3,
   },
+  paralyzed: {
+    isActive: false,
+    protectionExpiresIn: 0,
+  },
   capturedPawnsCounter: 0,
   arePawnsLocked: false,
   specialMoves: ['shield', 'drop'],

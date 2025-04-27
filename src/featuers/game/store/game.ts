@@ -4,6 +4,7 @@ import * as GameT from '@/featuers/game/types.ts'
 import * as PlayersT from '@/featuers/players/types'
 import * as GameService from '@/featuers/game/services/game.service.ts'
 import { usePlayersStore } from '@/featuers/players/store/players.ts'
+import { SpecialEffectsSequences } from '@/featuers/game/services/game.service.ts'
 
 export const useGameStore = defineStore('game', () => {
   const playersStore = usePlayersStore()
@@ -45,22 +46,19 @@ export const useGameStore = defineStore('game', () => {
 
   const manageAllowedPawns = () => {
     const lastTurn = getLastTurn()
-    const isMidTurn =
-      state.allowedPawns.length === 2 && lastTurn < GameService.UNLOCK_BIG_PAWNS_TURN
+    const rejectConditions = [
+      lastTurn < GameService.UNLOCK_MEDIUM_PAWNS_TURN,
+      state.allowedPawns.length === 2 && lastTurn < GameService.UNLOCK_BIG_PAWNS_TURN,
+      lastTurn > GameService.UNLOCK_BIG_PAWNS_TURN,
+    ]
 
-    if (
-      lastTurn < GameService.UNLOCK_MEDIUM_PAWNS_TURN ||
-      isMidTurn ||
-      lastTurn > GameService.UNLOCK_BIG_PAWNS_TURN
-    ) {
-      return
-    }
-
+    if (rejectConditions.some(Boolean)) return
     if (lastTurn === GameService.UNLOCK_MEDIUM_PAWNS_TURN) state.allowedPawns.push('medium')
     if (lastTurn === GameService.UNLOCK_BIG_PAWNS_TURN) state.allowedPawns.push('big')
   }
 
   const nextTurn = (payload?: GameT.PutPawnPayload | GameT.ApplyShieldPayload) => {
+    playersStore.decreaseParalyzeProtection(state.currentPlayerId)
     state.turns[getLastTurn() + 1] = { playerId: state.currentPlayerId, move: payload || 'skip' }
     state.currentPlayerId = playersStore
       .getPlayers()
@@ -71,9 +69,9 @@ export const useGameStore = defineStore('game', () => {
 
   const checkInstantWin = () => {
     const CAPTURED_PAWNS_FOR_INSTANT_WIN = 5
-    const capturedCounter = playersStore.getCapturedPawnsCounter(state.currentPlayerId)
+    const player = playersStore.getPlayer(state.currentPlayerId)
 
-    return capturedCounter === CAPTURED_PAWNS_FOR_INSTANT_WIN
+    return player.capturedPawnsCounter === CAPTURED_PAWNS_FOR_INSTANT_WIN
   }
 
   const isLineCaptureWin = (): string | undefined => {
@@ -107,10 +105,12 @@ export const useGameStore = defineStore('game', () => {
 
     penalties[result]()
 
-    nextTurn()
+    playersStore.removeParalyzeEffect(state.currentPlayerId)
+
+    checkWinner()
   }
 
-  const checkWinner = (payload: GameT.MovePayload) => {
+  const checkWinner = (payload?: GameT.MovePayload) => {
     const isInstantWin = checkInstantWin()
     state.winner = isInstantWin ? state.currentPlayerId : isLineCaptureWin()
 
@@ -125,28 +125,49 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const isPutPawnAllowed = (payload: GameT.PutPawnPayload) => {
+    const player = playersStore.getPlayer(state.currentPlayerId)
     const { rowIndex, columnIndex, pawnSize } = payload
-    const isPawnAvailable = playersStore.isPawnAvailableForPlayer(state.currentPlayerId, pawnSize)
+    const isPawnAvailable = player.pawns[payload.pawnSize] > 0
     const isPawnSizeAllowed = state.allowedPawns.includes(pawnSize)
 
-    return isPawnAvailable && isPawnSizeAllowed && !isCellProtected({ rowIndex, columnIndex })
+    return (
+      isPawnAvailable &&
+      isPawnSizeAllowed &&
+      !isCellProtected({ rowIndex, columnIndex }) &&
+      !playersStore.getPlayer(state.currentPlayerId).paralyzed.isActive
+    )
   }
 
   const isDropPawnAllowed = (payload: GameT.DropOpponentPawnPayload) => {
     const { rowIndex, columnIndex } = payload
     const isPlayerPawn = state.board[rowIndex][columnIndex].pawn?.playerId === state.currentPlayerId
 
-    return isCellProtected({ rowIndex, columnIndex }) || isPlayerPawn
+    return (
+      !isCellProtected({ rowIndex, columnIndex }) &&
+      !isPlayerPawn &&
+      !playersStore.getPlayer(state.currentPlayerId).paralyzed.isActive
+    )
   }
 
   const dropOpponentPawn = (payload: GameT.MovePayload) => {
-    if (isDropPawnAllowed(payload)) return
+    if (!isDropPawnAllowed(payload)) return
     if (playersStore.useSpecialMove(state.currentPlayerId, 'drop') === 'not-allowed') return
 
     const { rowIndex, columnIndex } = payload
     state.board[rowIndex][columnIndex].pawn = null
 
     checkWinner(payload)
+  }
+
+  const paralyzePlayer = () => {
+    const opponentId = playersStore.getOpponentId(state.currentPlayerId)
+    const result = SpecialEffectsSequences.paralyze.every(([row, column]) => {
+      return state.board[row][column].pawn?.playerId === state.currentPlayerId
+    })
+
+    if (!result || !playersStore.canPlayerBeParalyzed(opponentId)) return
+
+    playersStore.paralyzePlayer(playersStore.getOpponentId(state.currentPlayerId))
   }
 
   const putPawn = (payload: GameT.PutPawnPayload) => {
@@ -168,10 +189,12 @@ export const useGameStore = defineStore('game', () => {
     }
     playersStore.manipulatePawnAmount(state.currentPlayerId, pawnSize, -1)
 
+    paralyzePlayer()
     checkWinner(payload)
   }
 
   const applyShield = (payload: GameT.ApplyShieldPayload) => {
+    if (playersStore.getPlayer(state.currentPlayerId).paralyzed.isActive) return
     if (playersStore.useSpecialMove(state.currentPlayerId, 'shield') === 'not-allowed') return
     const { rowIndex, columnIndex } = payload
 
@@ -191,5 +214,6 @@ export const useGameStore = defineStore('game', () => {
     isLineCaptureWin,
     dropOpponentPawn,
     skipTurn,
+    checkWinner,
   }
 })

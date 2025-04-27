@@ -52,3 +52,11 @@ export const UNLOCK_MEDIUM_PAWNS_TURN = 4
 export const UNLOCK_BIG_PAWNS_TURN = 10
 
 export type MoveHandler = (args: { move: Move; rowIndex: number; columnIndex: number }) => void
+
+export const SpecialEffectsSequences = {
+  paralyze: [
+    [0, 1],
+    [2, 0],
+    [2, 2],
+  ],
+} as const
